@@ -13,6 +13,9 @@ $mode		= NULL;
 $file_pdf	= array();
 $file_xsv	= array();
 
+$time_1 = new DateTime();
+echo '[' . $time_1 -> format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "<br><br>\n";
+
 define('DOMAIN', 		$_SERVER['HTTP_HOST']);
 define('PAGE_PATH', 	makePagePath(DOMAIN, $_SERVER['REQUEST_URI']));
 define('CURRENT_DIR', 	__DIR__);
@@ -23,11 +26,11 @@ define('DATA_PATH', 	PAGE_PATH . DATA_BASE . "upload/{$year}/{$month}/");
 define('RESULT_DIR', 	CURRENT_DIR . RESULT_BASE . "{$year}/{$month}/");
 define('RESULT_PATH', 	PAGE_PATH . RESULT_BASE . "{$year}/{$month}/");
 
-echo PAGE_PATH  . "<br>\n";
-echo DATA_DIR . "<br>\n";
-echo RESULT_DIR . "<br><br>\n";
-echo DATA_PATH. "<br>\n";
-echo RESULT_PATH. "<br><br>\n";
+// echo PAGE_PATH  . "<br>\n";
+// echo DATA_DIR . "<br>\n";
+// echo RESULT_DIR . "<br><br>\n";
+// echo DATA_PATH. "<br>\n";
+// echo RESULT_PATH. "<br><br>\n";
 
 
 if (file_exists(DATA_DIR)) {
@@ -55,10 +58,10 @@ if (file_exists(RESULT_DIR)) {
 }
 echo "<br>------------------------------------------------<br>\n";
 foreach ($_FILES as $key => $data) {
-	echo "key name : {$key}<br>\n";
-	echo "file name : {$data['name']}<br>\n";
-	echo "file type : {$data['type']}<br>\n";
-	echo "file tmp_name : {$data['tmp_name']}<br>\n";
+	// echo "key name : {$key}<br>\n";
+	// echo "file name : {$data['name']}<br>\n";
+	// echo "file type : {$data['type']}<br>\n";
+	// echo "file tmp_name : {$data['tmp_name']}<br>\n";
 
 	$tempfile = $data['tmp_name'];
 	$filedata = array(
@@ -102,14 +105,29 @@ for ($count = 0; $count < count($member_data); $count++) {
 	echo $file_link;
 }
 
+echo "<br>------------------------<br><br>\n";
+$time_2 = new DateTime();
+$diff = $time_2 -> diff($time_1);
+echo '[' . $time_2 -> format('Y-m-d H:i:s')  . '] スクリプトは終了しました。'. "<br>\n";
+echo '処理にかかった時間は' . $diff -> format('%h:%i:%s') . '秒です。' . "<br>\n";
+
+
+
+
+
+
+
+// 以下function
+
+
 function openMemberData($file, $type = 'csv') {
 	$uri = DATA_PATH . $file['name'];
 	echo "<br>------------------------<br>\n";
 	echo "<a href='{$uri}' target='_blank'>PDFファイル分割データ用TSV/CSVファイル</a><br>\n";
 
 	$file = new SplFileObject($file['path'], 'r');
-	$file->setFlags(SplFileObject::READ_CSV);
-	if ($type == 'tsv') $file->setCsvControl("\t");
+	$file -> setFlags(SplFileObject::READ_CSV);
+	if ($type == 'tsv') $file -> setCsvControl("\t");
 
 	$array = array();
 
