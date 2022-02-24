@@ -3,8 +3,9 @@ require_once 'vendor/autoload.php';
 
 use setasign\Fpdi\Fpdi;
 
+$pdf_type	= $_POST['pdf_type'];
 $year		= $_POST['year'];
-$month		= $_POST['month'];
+$month		= str_pad($_POST['month'], 2, 0, STR_PAD_LEFT);
 $mode		= NULL;
 $file_pdf	= array();
 $file_xsv	= array();
@@ -89,10 +90,11 @@ $member_data = openMemberData($file_xsv, $mode);
 $uri = DATA_PATH . $file_pdf['name'];
 echo "<a href='{$uri}' target='_blank'>分割元PDFファイル</a>\n";
 
+$current_start_page = 1;
 for ($count = 0; $count < count($member_data); $count++) {
 	echo "<br>------------------------<br>\n";
 	
-	$file_link = split_PDF($file_pdf['path'], $member_data[$count]);
+	$file_link = split_PDF($file_pdf['path'], $member_data[$count], $current_start_page, $pdf_type, $year, $month);
 
 	echo $file_link;
 }
@@ -118,13 +120,13 @@ function openMemberData($file, $type = 'csv') {
 	return $array;
 }
 
-function split_PDF($pdf_path, $data) {
+function split_PDF($pdf_path, $data, &$start, $pdf_type, $year, $month) {
 	$memberCd	= $data[0];
-	$start 		= (int)$data[1];
-	$end 		= (int)$data[2];
+	$pages		= (int)$data[count($data) - 2];
+	$end 		= $start + $pages - 1;
 
 	if ($end < $start) {
-		return json_encode(array('error' => 1, 'error_message' => '終了ページが開始ページよりも小さいです。'), JSON_UNESCAPED_UNICODE);
+		return json_encode(array('error' => 1, 'error_message' => "終了ページ ({$end}) が開始ページ ({$start}) よりも小さいです。"), JSON_UNESCAPED_UNICODE);
 	}
 
 	$pdf 			= new Fpdi();
@@ -133,7 +135,7 @@ function split_PDF($pdf_path, $data) {
 		$total_pages 	= $pdf -> setSourceFile($pdf_path);	// PDFファイルを読み込む
 
 		if ($total_pages < $end) {
-			return json_encode(array('error' => 1, 'error_message' => '終了ページが総ページ数よりも大きいです。'), JSON_UNESCAPED_UNICODE);
+			return json_encode(array('error' => 1, 'error_message' => "終了ページ ({$end}) が総ページ数 ({$total_pages}) よりも大きいです。"), JSON_UNESCAPED_UNICODE);
 		}
 	} catch (Exception $error) {
 		return echo_error($error);
@@ -151,7 +153,7 @@ function split_PDF($pdf_path, $data) {
 		// $pdf -> useTemplate($templateId, null, null, 0, 0, true);				// 旧バージョン用
 	}
 	
-	$file_name = "split_file_{$memberCd}_{$start}-{$end}" . '.pdf';
+	$file_name = "{$memberCd}_{$year}{$month}_{$pdf_type}_{$start}-{$end}" . '.pdf';
 	
 	
 	/**
@@ -163,6 +165,7 @@ function split_PDF($pdf_path, $data) {
 	$pdf -> Output(RESULT_DIR . $file_name, 'F');
 
 	$uri = RESULT_PATH . $file_name;
+	$start = $end + 1;
 
 	return "<a href='{$uri}' target='_blank'>" . str_replace('//', '', $uri) . "</a>\n";
 }

@@ -2,7 +2,7 @@
 	'use strict';
 
 	function init(e) {
-		// init__form();
+		init__form();
 		init__file_select();
 	}
 
@@ -27,21 +27,33 @@
 	function init__form() {
 		const	form 	= document.querySelector('#PDF_Split'),
 				submit	= document.querySelector('#Submit'),
-				result	= document.querySelector('.result div');
+				result	= document.querySelector('.result div iframe');
+
 		
 		submit.addEventListener('click', async event => {
 			event.preventDefault();
 
-			const data = new FormData(form);
-			console.log(data.get('start'), data.get('end'));
+			result.addEventListener('load', send_form, false);
+			result.contentDocument.location.replace('./progress.html');
 
-			post_data(form.action, data)
-					.then(res => {
-						result.textContent = '';
-						result.insertAdjacentHTML('afterbegin', JSON.stringify(res));
-					})
-					.catch(error => console.error(error));
+			// const data = new FormData(form);
+			// console.log(data.get('start'), data.get('end'));
+
+			// post_data(form.action, data)
+			// 		.then(res => {
+			// 			result.textContent = '';
+			// 			result.insertAdjacentHTML('afterbegin', JSON.stringify(res));
+			// 		})
+			// 		.catch(error => console.error(error));
 		}, false);
+
+		function send_form(event) {
+			console.log(`IFRAME FIRE : ${event.type}`);
+
+			result.removeEventListener('load', send_form, false);
+
+			form.submit();
+		}
 	}
 
 	async function post_data(url = '', data) {

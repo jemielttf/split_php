@@ -113,7 +113,7 @@ input[type=submit] {
 	border-radius: 3px;
 	cursor: pointer;
 	transition: background .4s ease-in-out 0s;
-	margin-top: 1rem;
+	margin-top: 2rem;
 }
 
 .form .param label .button {
@@ -124,6 +124,9 @@ input[type=submit]:hover {
 	background: #0d4082;
 	transition: background .2s ease-out 0s;
 }
+
+input[type=submit].delete 		{ background: #bc140b; margin-top: 1rem; }
+input[type=submit].delete:hover { background: #880b04; }
 
 input[type=file] {
 	position: absolute;
