@@ -200,7 +200,8 @@ function makePagePath($domain, $path) {
 		$path_str = $path_str . '/' . $path_array[$i];
 	}
 
-	return "//{$domain}{$path_str}";
+	// return "//{$domain}{$path_str}";
+	return "{$path_str}";
 }
 
 function echo_error($error) {
