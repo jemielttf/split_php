@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, shrink-to-fit=no">
+
+<meta name="description" content="">
+
+<!-- <meta name="format-detection" content="telephone=no">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.svg"> -->
+<title>使い方</title>
+
+<style>
+	html {
+		font-size: 10px;
+	}
+
+	body {
+		margin: 0;
+		padding: 1rem;
+		font-size: 1.4rem;
+		font-family: -apple-system,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			'Hiragino Kaku Gothic ProN',
+			'Hiragino Sans',
+			'BIZ UDPGothic',
+			Meiryo,
+			Roboto,
+			sans-serif;
+	}
+
+	main h1 {
+		font-size: 1.8rem;
+		font-weight: 600;
+		padding: 0.5em .8em;
+		margin: 0;
+		background-color: #e7e7e7;
+	}
+
+	main p {
+		font-size: 1.4rem;
+		font-weight: 300;
+		line-height: 1.8;
+	}
+
+	main .pre {
+		display: inline-block;
+		padding: 1.4rem 2rem;
+		border-radius: 1rem;
+		border: 1px solid #e7e7e7;
+		background-color: #efefef;
+		vertical-align: top;
+		width: 250px;
+	}
+
+	main .pre + .pre {
+		margin-left: 2rem;
+	}
+
+	main .pre h2 {
+		font-size: 1.3rem;
+		font-weight: 600;
+		line-height: 1;
+		margin: 0;
+		margin-bottom: .8em;
+	}
+
+	a {
+		display: inline-block;
+		font-size: .85em;
+		font-weight: 300;
+		color: rgb(27, 92, 166);
+	}
+
+	main .pre pre {
+		font-family: monospace;
+		font-size: 1.1rem;
+		line-height: 1.6;
+		margin: 0;
+		padding: 0;
+		color: #555;
+	}
+</style>
+
+
+</head>
+
+
+<body>
+
+<main>
+	<h1>使い方</h1>
+	
+	<p>複数ページのPDFとページ分割を指定したCSV又はTSVをアップロードし<br>
+	分割データの保存先を年月を入力してください。</p>
+
+	<p>テストで使用しているPDF <a href="./data/test_file.pdf" target="_blank">（ダウンロード）</a></p>
+	
+	<p>テストで使用しているCSVのフォーマットは「会員番号, 分割開始ページ, 分割終了ページ」になります。</p>
+
+	<article class="pre">
+		<h2>sample_split_data.csv <a href="./data/sample_split_data.csv" target="_blank">（ダウンロード）</a></h2>
+
+<pre>MemberCd,start,end
+00001,1,4
+00002,5,6
+00003,7,9
+00004,10,13
+00005,14,16
+00006,17,20
+00007,21,22
+00008,23,24
+00009,25,28
+00010,29,31
+00011,32,33
+00012,34,35
+00013,36,37
+00014,38,40
+00015,41,44
+00016,45,46
+00017,47,48
+00018,49,50</pre>			
+		</article>
+
+		<article class="pre">
+			<h2>sample_split_data.tsv <a href="./data/sample_split_data.tsv" target="_blank">（ダウンロード）</a></h2>
+	
+<pre>MemberCd	start	end
+00001	1	1
+00002	2	4
+00003	5	7
+00004	8	10
+00005	11	14
+00006	15	16
+00007	17	18
+00008	19	21
+00009	22	24
+00010	25	28
+00011	29	31
+00012	32	33
+00013	34	35
+00014	36	37
+00015	38	40
+00016	41	42
+00017	43	44
+00018	45	47
+00019	48	49
+00020	50	50</pre>			
+			</article>
+	
+
+</main>
+
+</body>
+
+</html>

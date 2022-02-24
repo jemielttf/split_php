@@ -1,0 +1,9 @@
+{
+    "name": "cp_js/split_pdf",
+    "type": "project",
+    "require": {
+        "setasign/fpdi": "^2.3",
+        "setasign/fpdf": "^1.8"
+    },
+    "minimum-stability": "dev"
+}
