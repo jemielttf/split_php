@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('Asia/Tokyo');
+
 $pdf_type	= $_POST['pdf_type'];
 $year		= $_POST['year'];
 $month		= str_pad($_POST['month'], 2, 0, STR_PAD_LEFT);
@@ -78,9 +80,14 @@ if (empty($file_pdf) || empty($file_xsv)) {
 
 $file_pdf_path = $file_pdf['path'];
 $file_xsv_path = $file_xsv['path'];
+$time = new DateTime();
+$time_str = $time -> format('Ymd_His');
 
 $output = null;
-$cmd = "nohup /usr/local/bin/php ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' '{$mode}' '{$year}' '{$month}' > ./log/bat.log 2> ./log/error.log &";
+// 開発ローカル
+$cmd = "nohup /usr/local/bin/php ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' '{$mode}' '{$year}' '{$month}' >> ./log/bat_{$time_str}.log 2>&1 &";
+// TTC
+// $cmd = "nohup /usr/bin/php ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' '{$mode}' '{$year}' '{$month}' >> ./log/bat_{$time_str}.log 2>&1 &";
 echo $cmd . "<br>\n";
 
 exec($cmd, $output);
