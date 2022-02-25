@@ -75,8 +75,8 @@ foreach ($_FILES as $key => $data) {
 
 			if 		($key == 'PDF') $file_pdf = $filedata;
 			elseif	($key == 'xSV') {
-				$file_xsv = $filedata;
-				$mode = $data['type'] == 'text/csv' ? 'csv' : 'tsv';
+				$file_xsv 	= $filedata;
+				$mode 		= $data['type'] == 'text/csv' || $data['type'] == 'application/vnd.ms-excel' ? 'csv' : 'tsv';
 			}
 		} else {
 			echo "ファイルをアップロードできません。<br>\n";

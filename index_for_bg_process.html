@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, shrink-to-fit=no">
+
+<meta name="description" content="">
+
+<!-- <meta name="format-detection" content="telephone=no">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.svg"> -->
+
+<link rel="stylesheet" href="style.css?v=0.0.5">
+<script src="index.js?v=0.0.5"></script>
+
+<title>PDF分割出力動作サンプル（バックグラウンド実行版）</title>
+</head>
+
+
+<body>
+
+<header>
+	<h1>PDF分割出力動作サンプル（バックグラウンド実行版）</h1>
+</header>
+
+<main>
+	<section class="form" target="_blank">
+		<h1>Test Form</h1>
+		<form id="PDF_Split" action="./split_pdf_for_background.php" method="POST" enctype="multipart/form-data" target="pdf">
+			<h2>テスト用PDFファイルと分割データを指定</h2>
+
+			<div class="param">
+				<label>
+					<span>文書タイプ : </span>
+					<span><input type="radio" name="pdf_type" value="invoice-letter" checked> 請求書</span>
+				</label>
+			</div>
+
+			<div class="param">
+				<label>
+					<span></span>
+					<span><input type="radio" name="pdf_type" value="payment-notice-letter"> 支払い通知書</span>
+				</label>
+			</div>
+
+			<div class="param" style="margin-top: 1.5rem;">
+				<label>
+					<span>PDF : </span>
+					<span>
+						<input type="file" name="PDF" accept=".pdf">
+						<input type="text" name="filename_PDF" placeholder="選択されていません。" disabled>
+						<span class="button">選択</span>
+					</span>
+				</label>
+			</div>
+
+			<div class="param">
+				<label>
+					<span>CSV/TSV : </span>
+					<span>
+						<input type="file" name="xSV" accept=".csv, .tsv">
+						<input type="text" name="filename_xSV" placeholder="選択されていません。" disabled>
+						<span class="button">選択</span>
+					</span>
+				</label>
+			</div>
+
+			<div class="param">
+				<label>
+					<span>保存年月 : </span>
+					<span><input type="tel" name="year" value="2022"> 年</span>
+				</label>
+			</div>
+
+			<div class="param">
+				<label>
+					<span></span>
+					<span><input type="tel" name="month" value="1"> 月</span>
+				</label>
+			</div>
+
+			<input id="Submit" type="submit" value="送信">
+		</form>
+
+		<form id="Delete_result" action="./rm_result.php" method="POST" target="pdf">
+			<h2>データを全て削除します。</h2>
+			<input type="submit" class="delete" value="削除">
+		</form>
+	</section>
+
+	<section class="result">
+		<h1>Result</h1>
+		<div>
+			<iframe name="pdf" src="info.html?v=0.0.5"></iframe>
+		</div>
+	</section>
+</main>
+
+<footer>
+
+</footer>
+
+</body>
+
+</html>
