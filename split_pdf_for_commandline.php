@@ -41,7 +41,7 @@ $current_start_page = 1;
 for ($count = 0; $count < count($member_data); $count++) {
 	$file_name = split_PDF($file_pdf, $member_data[$count], $current_start_page, $pdf_type, $year, $month);
 
-	echo DATA_DIR . $file_name . "\n";
+	echo RESULT_DIR . $file_name . "\n";
 	echo '----------------' . "\n";
 }
 
