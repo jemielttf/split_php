@@ -91,5 +91,12 @@ $cmd = "nohup /usr/local/bin/php ./split_pdf_for_commandline.php '{$file_pdf_pat
 echo $cmd . "<br>\n";
 
 exec($cmd, $output);
-
 echo "<br><br>バックグラウンド処理プロセスを起動しました。<br><br>\n";
+
+
+$cmd = "ps -ax | grep split_pdf_for_commandline.php | grep -v grep";
+exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
+
+foreach ($output as $key => $ps) {
+	echo $ps . "<br>\n";
+}

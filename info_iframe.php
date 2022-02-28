@@ -93,6 +93,26 @@
 <body>
 
 <main>
+
+<?php
+
+$cmd = "ps -ax | grep split_pdf_for_commandline.php | grep -v grep";
+exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
+
+
+if (count($output) > 0) {
+	echo "<h1>実行中のプロセス</h1>";
+
+	foreach ($output as $key => $ps) {
+		echo '<p>' . $ps . "</p>\n";
+	}
+
+	echo "<br><br>\n";
+}
+
+	
+?>
+
 	<h1>使い方</h1>
 	
 	<p>複数ページのPDFとページ分割を指定したCSV又はTSVをアップロードし<br>
