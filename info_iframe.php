@@ -49,7 +49,7 @@
 	main dl {
 		margin: 0;
 		margin-top: 2.5rem;
-		font-size: 1.6rem;
+		font-size: 1.4rem;
 		display: flex;
 		justify-content: flex-start;
 	}
@@ -59,7 +59,7 @@
 	}
 
 	main dl dt {
-		width: 130px;
+		width: 8em;
 		margin: 0;
 		position: relative;
 		padding-right: 1.5em;
@@ -78,11 +78,19 @@
 		margin: 0;
 	}
 
-	main dl dd span {
+	main dl dd span:nth-of-type(1) {
 		display: inline-block;
 		/* width: 100px; */
 		margin-right: .5em;
 		font-weight: 500;
+	}
+
+	main dl dd span:nth-of-type(2) {
+		display: inline-block;
+		/* width: 100px; */
+		margin-left: .5em;
+		font-weight: 300;
+		font-size: 0.8em;
 	}
 
 	main .pre {
@@ -133,88 +141,155 @@
 <main>
 
 <?php
+date_default_timezone_set('Asia/Tokyo');
 
 $cmd = "ps -ax | grep split_pdf_for_commandline.php | grep -v grep";
 exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
 
-// $output = array(
-// 	"4510 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_0_1-1114.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_0_1-1114.csv invoice-letter cvs 2022 01",
-// 	"4512 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_1_1115-2208.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_1_1115-2208.csv invoice-letter cvs 2022 01",
-// 	"4514 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_2_2209-3309.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_2_2209-3309.csv invoice-letter cvs 2022 01",
-// 	"4516 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_3_3310-4394.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_3_3310-4394.csv invoice-letter cvs 2022 01",
-// 	"4518 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_4_4395-5491.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_4_4395-5491.csv invoice-letter cvs 2022 01",
-// 	"4520 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_5_5492-6589.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_5_5492-6589.csv invoice-letter cvs 2022 01",
-// 	"4522 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_6_6590-7701.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_6_6590-7701.csv invoice-letter cvs 2022 01",
-// 	"4524 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_7_7702-8815.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_7_7702-8815.csv invoice-letter cvs 2022 01",
-// 	"4526 ??         0:00.14 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_8_8816-9699.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_8_8816-9699.csv invoice-letter cvs 2022 01",
-// 	"6090 ??         0:00.06 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_0_1-2258.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_0_1-2258.csv payment-notice-letter cvs 2022 01",
-// 	"6093 ??         0:00.06 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_1_2259-4427.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_1_2259-4427.csv payment-notice-letter cvs 2022 01",
-// 	"6096 ??         0:00.06 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_2_4428-6546.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_2_4428-6546.csv payment-notice-letter cvs 2022 01",
-// 	"6098 ??         0:00.07 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_3_6547-8584.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_3_6547-8584.csv payment-notice-letter cvs 2022 01",
-// 	"6100 ??         0:00.07 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_4_8585-10615.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_4_8585-10615.csv payment-notice-letter cvs 2022 01",
-// 	"6102 ??         0:00.09 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_5_10616-11804.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_5_10616-11804.csv payment-notice-letter cvs 2022 01",
-// 	"4510 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_0_1-1114.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_0_1-1114.csv invoice-letter cvs 2022 02",
-// 	"4512 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_1_1115-2208.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_1_1115-2208.csv invoice-letter cvs 2022 02",
-// 	"4514 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_2_2209-3309.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_2_2209-3309.csv invoice-letter cvs 2022 02",
-// 	"4516 ??         0:00.12 /usr/local/bin/php ./split_pdf_for_commandline.php /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_3_3310-4394.pdf /Users/jun/Sites/TTC/split_php/data/upload/2022/01/tmp_3_3310-4394.csv invoice-letter cvs 2022 02",
-// );
 
-if (count($output) > 0) {
+$filelist = get_newest_dir_logs('./log');
+
+$log_list   = array();
+foreach($filelist as $filename) {
+	if(preg_match('@_status\.log$@', $filename, $m)) {
+		$log_list[]  = $filename;
+	}
+}
+
+if (count($log_list) > 0) {
 	echo "<h1>実行中のプロセス</h1>\n";
 
-	$proc_array = array();
+	$task_array = array();
 
-	foreach ($output as $key => $ps) {
-		// echo "<p>{$ps}</p>\n";
+	foreach($log_list as $file_path) {
+		$split_file_path 	= explode('/', $file_path);
+		$length 			= count($split_file_path);
 
-		$ps_array = explode(' ', trim($ps));
-		// print_r($ps_array);
-		// echo "<br>\n";
+		$month	= $split_file_path[$length - 3] . '_' . $split_file_path[$length - 2];
+		$name	= $split_file_path[$length - 1];
+		$type	= explode('_', $name);
+		$type	= $type[0];
+
+		if (empty($task_array[$month])) $task_array[$month] = array();
+		if (empty($task_array[$month][$type])) $task_array[$month][$type] = array();
 		
-		$proc_id 	= $ps_array[0];
-		$proc_time	= $ps_array[10];
-		$proc_type 	= $ps_array[15];
-		$month		= $ps_array[17] . '_' . $ps_array[18];
-
-		// $proc_id 	= $ps_array[0];
-		// $proc_time	= $ps_array[10];
-		// $proc_type 	= $ps_array[20];
-		// $month		= $ps_array[22] . '_' . $ps_array[23];
-
-		// echo "<p>{$year}/{$month}分 {$proc_type} : {$proc_time}経過 (ID : {$proc_id})</p>\n";
-
-		if (empty($proc_array[$month])) $proc_array[$month] = array();
-		if (empty($proc_array[$month][$proc_type])) $proc_array[$month][$proc_type] = 1;
-		else $proc_array[$month][$proc_type]++;
+		$task_array[$month][$type][] = $file_path;
 	}
 
-	foreach($proc_array as $key => $month_data) {
+	foreach($task_array as $key => $month_data) {
 		$split_key = explode('_', $key);
 		$label_month = $split_key[0] . '年' . $split_key[1] . '月分';
 		$count = 0;
 
-		foreach($month_data as $type => $value) {
+		foreach($month_data as $type => $log_list) {
 			$count++;
 
 			$label_type =  $type == 'invoice-letter' 			? '請求書'
 						: ($type == 'payment-notice-letter'
 																? '支払い通知書'
 																: '3個目の書類');
-			echo '<dl><dt>' . ($count == 1 ? $label_month : '') . "</dt><dd><span>{$label_type}のPDF分割</span>を処理中です。</dd></dl>\n";
+
+			
+			$fin_count = 0;
+			$is_finish = false;
+			$time_stamps = array();
+
+			foreach($log_list as $path) {
+				$proc_status = load_csv_data($path);
+				$proc_status = $proc_status[0];
+				if ($proc_status[1] == 'fin') $fin_count++;
+				$time_stamps[] = new DateTime($proc_status[0]);
+			}
+			$is_finish = $fin_count == count($log_list) ? true : false;
+
+			$status_time = '';
+			foreach($time_stamps as $time) {
+				if (empty($status_time)) $status_time = $time;
+				else $status_time = $status_time < $time ? $time : $status_time;
+			}
+			$status_time = $is_finish ? $status_time : new DateTime();
+			$time_str = $status_time -> format('Y.m.d H:i:s');
+
+			echo 	'<dl><dt>' . 
+					($count == 1 ? $label_month : '') . 
+					"</dt><dd><span>{$label_type}のPDF分割</span>" . 
+					($is_finish ? 'は完了しました。' : 'を処理中です。') .
+					"<span>({$time_str})</span></dd></dl>\n";
 		}
 	}
 
 	echo "<br><br>\n";
 
-	echo "<script>\n";
-	echo "setTimeout(function () {\n";
-	echo "	location.reload();\n";
-	echo "}, 3000);\n";
-	echo "</script>\n";
+	// echo "<script>\n";
+	// echo "setTimeout(function () {\n";
+	// echo "	location.reload();\n";
+	// echo "}, 3000);\n";
+	// echo "</script>\n";
 }
 
-	
+
+function get_newest_dir_logs($dir) {        
+	$filenames          = glob($dir . '/*', GLOB_ONLYDIR);
+
+	$target_dirnames    = array();
+	$last_dirname       = null;
+
+	foreach($filenames as $filename) {
+		$target_dirnames[]  = $filename;
+	}
+
+	// 最大インデックス付きの親ディレクトリを特定
+	$dir_num_y = get_large_num_dir($target_dirnames);
+	$year_dirname = $dir . '/' . $dir_num_y;
+
+	$filenames = glob($year_dirname . '/*', GLOB_ONLYDIR);
+	$target_dirnames    = array();
+
+	foreach($filenames as $filename) {
+		if(strpos($filename, $year_dirname) === 0) {
+			$target_dirnames[]  = $filename;
+		}
+	}
+
+	// 最大インデックス付きの親ディレクトリを特定
+	$dir_num_m = get_large_num_dir($target_dirnames);
+	$last_dirname   = $year_dirname . '/' . $dir_num_m;
+
+	// 最大インデックス付きの親ディレクトリの中のファイルリスト
+	$file_list      = glob($last_dirname . '/*');
+
+	return $file_list;
+}
+
+function get_large_num_dir($dirs) {
+	$dir_num = 0;
+
+	foreach($dirs as $dirname) {
+		preg_match('@(\d+)$@', $dirname, $m);
+		$dir_num       = (int)$m[1] > (int)$dir_num ? $m[1] : $dir_num;
+	}
+	return $dir_num;
+}
+
+function load_csv_data($file_xsv, $type = 'csv') {
+	$file = new SplFileObject($file_xsv, 'r');
+	$file -> setFlags(SplFileObject::READ_CSV);
+	if ($type == 'tsv') $file -> setCsvControl("\t");
+
+	$array = array();
+
+	$count = 0;
+	foreach ($file as $row) {
+		$count++;
+		if (!is_null($row[0])) array_push($array, $row);
+	}
+
+	return $array;
+}
+
 ?>
+
+
 	<h1>使い方</h1>
 	
 	<p>複数ページのPDFとページ分割を指定したCSV又はTSVをアップロードし<br>

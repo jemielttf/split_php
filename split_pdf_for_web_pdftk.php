@@ -111,7 +111,7 @@ if (empty($file_pdf) || empty($file_xsv)) {
 }
 
 // TSVを読み込み
-$member_data = openMemberData($file_xsv, $mode);
+$member_data = load_csv_data($file_xsv, $mode);
 
 // $uri = DATA_PATH . $file_pdf['name'];
 // echo "<a href='{$uri}' target='_blank'>分割元PDFファイル</a>\n";
@@ -179,12 +179,12 @@ if ($parallel == 'single') {
 		$time_str 		= $time -> format('Ymd_His') . '_' . $i;
 		$log_dir		= LOG_DIR;
 
-		$cmd = "nohup {$php_path} ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' 'cvs' '{$year}' '{$month}' '$time_str' >> {$log_dir}bat_{$pdf_type}_{$time_str}.log 2>&1 &";
+		$cmd = "nohup {$php_path} ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' 'cvs' '{$year}' '{$month}' '$time_str' >> {$log_dir}{$pdf_type}_{$time_str}.log 2>&1 &";
 
 		exec($cmd, $output);
 		echo "\n--------------------------------------------<br>\n";
 		// echo $cmd . "<br>\n";
-		echo "バックグラウンドで処理を実行中です。({$log_dir}bat_{$time_str}.log)<br>\n";
+		echo "バックグラウンドで処理を実行中です。({$log_dir}{$time_str}.log)<br>\n";
 	}
 
 
@@ -204,7 +204,7 @@ if ($parallel == 'single') {
 // 以下function
 
 
-function openMemberData($file, $type = 'csv') {
+function load_csv_data($file, $type = 'csv') {
 	$uri = DATA_PATH . $file['name'];
 	// echo "<br>------------------------<br>\n";
 	// echo "<a href='{$uri}' target='_blank'>PDFファイル分割データ用TSV/CSVファイル</a><br>\n";

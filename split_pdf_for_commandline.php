@@ -11,9 +11,6 @@ $year		= $argv[5];
 $month		= $argv[6];
 $proc_id	= $argv[7];
 
-$time_1 = new DateTime();
-echo '[' . $time_1 -> format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "\n\n";
-
 define('CURRENT_DIR', 	__DIR__);
 define('DATA_BASE', 	'/data/');
 define('RESULT_BASE', 	'/result/');
@@ -24,8 +21,9 @@ define('LOG_DIR', 		CURRENT_DIR . "/log/");
 define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
 // define('PDFtk_PATH', 	'/usr/bin/pdftk');
 
-// echo DATA_DIR . "<br>\n";
-// echo RESULT_DIR . "<br><br>\n";
+$time_1 = new DateTime();
+echo '[' . $time_1 -> format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "\n\n";
+write_status_log($proc_id, 'start', $year, $month, $pdf_type);
 
 for ($i = 1; $i < count($argv); $i++) {
 	echo $argv[$i];
@@ -36,7 +34,7 @@ echo "----------------------------\n";
 if (empty($file_pdf) || empty($file_xsv)) return;
 
 // CSVを読み込み
-$member_data = openMemberData($file_xsv, $mode);
+$member_data = load_csv_data($file_xsv, $mode);
 
 $pdftk	= PDFtk_PATH;
 $cmd 	= "{$pdftk} {$file_pdf} dump_data | grep NumberOfPages | sed 's/[^0-9]*//'";
@@ -50,6 +48,7 @@ for ($count = 0; $count < count($member_data); $count++) {
 	if ($result['error']) {
 		write_error_log($proc_id, $member_data[$count][0], $result['error_message'], $year, $month, $pdf_type);
 		echo 'エラー : ' . $result['error_message'] . "\n";
+		return;
 	}
 	else echo RESULT_DIR . $result['data'] . "\n";
 	echo '----------------' . "\n";
@@ -61,14 +60,17 @@ removeFile($file_xsv);
 echo "\n\n------------------------\n";
 $time_2 = new DateTime();
 $diff = $time_2 -> diff($time_1);
-echo '処理にかかった時間は' . $diff -> format('%h:%i:%s') . '秒です。' . "\n";
 echo '[' . $time_2 -> format('Y-m-d H:i:s')  . '] スクリプトは終了しました。'. "\n";
+echo '処理にかかった時間は' . $diff -> format('%h:%i:%s') . '秒です。' . "\n";
+write_status_log($proc_id, 'fin', $year, $month, $pdf_type);
+
+
+
 
 
 // 以下function
 
-
-function openMemberData($file_xsv, $type = 'csv') {
+function load_csv_data($file_xsv, $type = 'csv') {
 	$file = new SplFileObject($file_xsv, 'r');
 	$file -> setFlags(SplFileObject::READ_CSV);
 	if ($type == 'tsv') $file -> setCsvControl("\t");
@@ -105,7 +107,7 @@ function split_PDF($pdf_path, $data, &$start, $pdf_type, $year, $month, $total_p
 	echo $result . " \n";
 
 	$start = $end + 1;
-	
+
 	if ($result == 0) {
 		return array('error' => 0, 'data' => $file_name);
 	} else {
@@ -128,6 +130,18 @@ function write_error_log($proc_id, $memberCd, $error_msg, $year, $month, $pdf_ty
 	if ($log === FALSE) echo 'エラーログの書き込みに失敗しました。';
 
 	$time = new DateTime();
-	fputcsv($log, array($time -> format('Y-m-d H:i:s'), $proc_id, $year, $month, $pdf_type, $memberCd, $error_msg, LOG_DIR . "{$year}/{$month}/{$proc_id}.log"));
+	fputcsv($log, array($time -> format('Y-m-d H:i:s'), "{$year}_{$month}", $pdf_type, $proc_id, $memberCd, $error_msg, LOG_DIR . "{$year}/{$month}/{$proc_id}.log"));
 	fclose($log);
 }
+
+function write_status_log($proc_id, $msg, $year, $month, $pdf_type) {
+	$log_path = LOG_DIR . "{$year}/{$month}/{$pdf_type}_{$proc_id}_status.log";
+
+	$log = fopen($log_path, 'w');
+	if ($log === FALSE) write_error_log($proc_id, '', 'ステータスログの書き込みに失敗しました。', $year, $month, $pdf_type);
+
+	$time = new DateTime();
+	fputcsv($log, array($time -> format('Y-m-d\TH:i:s'), $msg));
+	fclose($log);
+}
+
