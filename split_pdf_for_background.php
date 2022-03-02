@@ -1,5 +1,7 @@
 <?php
 
+echo '<link rel="stylesheet" href="style.css?v=0.0.5">' . "\n";
+
 date_default_timezone_set('Asia/Tokyo');
 
 $pdf_type	= $_POST['pdf_type'];

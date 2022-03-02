@@ -28,7 +28,7 @@
 <main>
 	<section class="form" target="_blank">
 		<h1>Test Form</h1>
-		<form id="PDF_Split" action="./split_pdf_for_web.php" method="POST" enctype="multipart/form-data" target="pdf">
+		<form id="PDF_Split" action="./split_pdf_for_web_pdftk.php" method="POST" enctype="multipart/form-data" target="pdf">
 			<h2>テスト用PDFファイルと分割データを指定</h2>
 
 			<div class="param">
@@ -78,6 +78,20 @@
 				<label>
 					<span></span>
 					<span><input type="tel" name="month" value="1"> 月</span>
+				</label>
+			</div>
+
+			<div class="param">
+				<label>
+					<span>分割処理 : </span>
+					<span><input type="radio" name="parallel" value="multi" checked> 分割処理</span>
+				</label>
+			</div>
+
+			<div class="param">
+				<label>
+					<span>分割数 : </span>
+					<span><input type="tel" name="page_count" value="1000"> 件毎に分割</span>
 				</label>
 			</div>
 
