@@ -15,7 +15,7 @@ $file_pdf	= array();
 $file_xsv	= array();
 
 $time_1 = new DateTime();
-echo '[' . $time_1 -> format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "<br><br>\n";
+echo '[' . $time_1->format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "<br><br>\n";
 
 define('DOMAIN', 		$_SERVER['HTTP_HOST']);
 define('PAGE_PATH', 	makePagePath(DOMAIN, $_SERVER['REQUEST_URI']));
@@ -128,9 +128,9 @@ if ($parallel == 'single') {
 
 	echo "<br>------------------------<br><br>\n";
 	$time_2 = new DateTime();
-	$diff = $time_2 -> diff($time_1);
-	echo '[' . $time_2 -> format('Y-m-d H:i:s')  . '] スクリプトは終了しました。'. "<br>\n";
-	echo '処理にかかった時間は' . $diff -> format('%h:%i:%s') . '秒です。' . "<br>\n";
+	$diff = $time_2->diff($time_1);
+	echo '[' . $time_2->format('Y-m-d H:i:s')  . '] スクリプトは終了しました。'. "<br>\n";
+	echo '処理にかかった時間は' . $diff->format('%h:%i:%s') . '秒です。' . "<br>\n";
 
 } elseif ($parallel == 'multi') {
 	$split_member_data = splitMemberData($member_data, $page_count);
@@ -176,7 +176,7 @@ if ($parallel == 'single') {
 		$php_path		= PHP_PATH;
 		$file_pdf_path	= $file_data['pdf'];
 		$file_xsv_path	= $file_data['csv'];
-		$time_str 		= $time -> format('Ymd_His') . '_' . $i;
+		$time_str 		= $time->format('Ymd_His') . '_' . $i;
 		$log_dir		= LOG_DIR;
 
 		$cmd = "nohup {$php_path} ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' 'cvs' '{$year}' '{$month}' '$time_str' >> {$log_dir}{$pdf_type}_{$time_str}.log 2>&1 &";
@@ -210,8 +210,8 @@ function load_csv_data($file, $type = 'csv') {
 	// echo "<a href='{$uri}' target='_blank'>PDFファイル分割データ用TSV/CSVファイル</a><br>\n";
 
 	$file = new SplFileObject($file['path'], 'r');
-	$file -> setFlags(SplFileObject::READ_CSV);
-	if ($type == 'tsv') $file -> setCsvControl("\t");
+	$file->setFlags(SplFileObject::READ_CSV);
+	if ($type == 'tsv') $file->setCsvControl("\t");
 
 	$array = array();
 
@@ -329,5 +329,5 @@ function makePagePath($domain, $path) {
 }
 
 function echo_error($error) {
-	return json_encode(array('error' => 1, 'error_message' => $error -> getMessage()));
+	return json_encode(array('error' => 1, 'error_message' => $error->getMessage()));
 }

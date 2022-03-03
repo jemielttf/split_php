@@ -62,7 +62,7 @@
 		width: 8em;
 		margin: 0;
 		position: relative;
-		padding-right: 1.5em;
+		padding-right: 1em;
 		box-sizing: border-box;
 	}
 
@@ -91,6 +91,29 @@
 		margin-left: .5em;
 		font-weight: 300;
 		font-size: 0.8em;
+	}
+
+	main dl dd form {
+		display: inline-block;
+	}
+
+	main dl dd form input[type=submit] {
+		-webkit-appearance: none;
+		font-size: 1.1rem;
+		font-weight: 300;
+		color: #fff;
+		padding: 0.2em 1.0em;
+		background-color: #0363de;
+		border: none;
+		border-radius: 3px;
+		cursor: pointer;
+		margin-left: 1em;
+		transition: background .4s ease-in-out 0s;
+	}
+
+	main dl dd form input[type=submit]:hover {
+		background-color: #0d4082;
+		transition: background .2s ease-out 0s;
 	}
 
 	main .pre {
@@ -157,7 +180,7 @@ foreach($filelist as $filename) {
 }
 
 if (count($log_list) > 0) {
-	echo "<h1>実行中のプロセス</h1>\n";
+	echo "<h1>実行結果</h1>\n";
 
 	$task_array = array();
 
@@ -208,13 +231,26 @@ if (count($log_list) > 0) {
 				else $status_time = $status_time < $time ? $time : $status_time;
 			}
 			$status_time = $is_finish ? $status_time : new DateTime();
-			$time_str = $status_time -> format('Y.m.d H:i:s');
+			$time_str = $status_time->format('Y.m.d H:i:s');
 
 			echo 	'<dl><dt>' . 
 					($count == 1 ? $label_month : '') . 
 					"</dt><dd><span>{$label_type}のPDF分割</span>" . 
 					($is_finish ? 'は完了しました。' : 'を処理中です。') .
-					"<span>({$time_str})</span></dd></dl>\n";
+					"<span>({$time_str})</span>";
+
+			if ($is_finish) {
+				$form_str  = 	"<form method='POST' action='./make_zip.php'>";
+				$form_str .= 	"<input type='hidden' name='year' value='{$split_key[0]}'>";
+				$form_str .= 	"<input type='hidden' name='month' value='{$split_key[1]}'>";
+				$form_str .= 	"<input type='hidden' name='type' value='{$type}'>";
+				$form_str .= 	"<input type='submit' value='ダウンロード'>";
+				$form_str .= 	"</form>";
+
+				echo $form_str;
+			}
+
+			echo 	"</dd></dl>\n";
 		}
 	}
 
@@ -223,7 +259,7 @@ if (count($log_list) > 0) {
 	// echo "<script>\n";
 	// echo "setTimeout(function () {\n";
 	// echo "	location.reload();\n";
-	// echo "}, 3000);\n";
+	// echo "}, 30000);\n";
 	// echo "</script>\n";
 }
 
@@ -273,8 +309,8 @@ function get_large_num_dir($dirs) {
 
 function load_csv_data($file_xsv, $type = 'csv') {
 	$file = new SplFileObject($file_xsv, 'r');
-	$file -> setFlags(SplFileObject::READ_CSV);
-	if ($type == 'tsv') $file -> setCsvControl("\t");
+	$file->setFlags(SplFileObject::READ_CSV);
+	if ($type == 'tsv') $file->setCsvControl("\t");
 
 	$array = array();
 

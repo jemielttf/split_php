@@ -22,7 +22,7 @@ define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
 // define('PDFtk_PATH', 	'/usr/bin/pdftk');
 
 $time_1 = new DateTime();
-echo '[' . $time_1 -> format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "\n\n";
+echo '[' . $time_1->format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "\n\n";
 write_status_log($proc_id, 'start', $year, $month, $pdf_type);
 
 for ($i = 1; $i < count($argv); $i++) {
@@ -59,9 +59,9 @@ removeFile($file_xsv);
 
 echo "\n\n------------------------\n";
 $time_2 = new DateTime();
-$diff = $time_2 -> diff($time_1);
-echo '[' . $time_2 -> format('Y-m-d H:i:s')  . '] スクリプトは終了しました。'. "\n";
-echo '処理にかかった時間は' . $diff -> format('%h:%i:%s') . '秒です。' . "\n";
+$diff = $time_2->diff($time_1);
+echo '[' . $time_2->format('Y-m-d H:i:s')  . '] スクリプトは終了しました。'. "\n";
+echo '処理にかかった時間は' . $diff->format('%h:%i:%s') . '秒です。' . "\n";
 write_status_log($proc_id, 'fin', $year, $month, $pdf_type);
 
 
@@ -72,8 +72,8 @@ write_status_log($proc_id, 'fin', $year, $month, $pdf_type);
 
 function load_csv_data($file_xsv, $type = 'csv') {
 	$file = new SplFileObject($file_xsv, 'r');
-	$file -> setFlags(SplFileObject::READ_CSV);
-	if ($type == 'tsv') $file -> setCsvControl("\t");
+	$file->setFlags(SplFileObject::READ_CSV);
+	if ($type == 'tsv') $file->setCsvControl("\t");
 
 	$array = array();
 
@@ -120,7 +120,7 @@ function removeFile($path) {
 }
 
 function echo_error($error) {
-	return json_encode(array('error' => 1, 'error_message' => $error -> getMessage()));
+	return json_encode(array('error' => 1, 'error_message' => $error->getMessage()));
 }
 
 function write_error_log($proc_id, $memberCd, $error_msg, $year, $month, $pdf_type) {
@@ -130,7 +130,7 @@ function write_error_log($proc_id, $memberCd, $error_msg, $year, $month, $pdf_ty
 	if ($log === FALSE) echo 'エラーログの書き込みに失敗しました。';
 
 	$time = new DateTime();
-	fputcsv($log, array($time -> format('Y-m-d H:i:s'), "{$year}_{$month}", $pdf_type, $proc_id, $memberCd, $error_msg, LOG_DIR . "{$year}/{$month}/{$proc_id}.log"));
+	fputcsv($log, array($time->format('Y-m-d H:i:s'), "{$year}_{$month}", $pdf_type, $proc_id, $memberCd, $error_msg, LOG_DIR . "{$year}/{$month}/{$proc_id}.log"));
 	fclose($log);
 }
 
@@ -141,7 +141,7 @@ function write_status_log($proc_id, $msg, $year, $month, $pdf_type) {
 	if ($log === FALSE) write_error_log($proc_id, '', 'ステータスログの書き込みに失敗しました。', $year, $month, $pdf_type);
 
 	$time = new DateTime();
-	fputcsv($log, array($time -> format('Y-m-d\TH:i:s'), $msg));
+	fputcsv($log, array($time->format('Y-m-d\TH:i:s'), $msg));
 	fclose($log);
 }
 
