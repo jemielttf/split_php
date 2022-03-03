@@ -2,14 +2,14 @@
 ini_set('max_execution_time', 0);
 date_default_timezone_set('Asia/Tokyo');
 
-$year 	= $_POST['year'];
-$month 	= $_POST['month'];
-$type	= $_POST['type'];
+$year 	= $argv[1];
+$month 	= $argv[2];
+$type	= $argv[3];
 
 class MakeZipArchive {
-    protected string $year;
-    protected string $month;
-	protected string $type;
+    protected $year;
+    protected $month;
+	protected $type;
     
     public function __construct($year, $month, $type) {
 		$this->year 	= $year;
@@ -30,11 +30,12 @@ class MakeZipArchive {
 			}
 		}
 
-		print_r($pdf_list);
-		echo "<br>\n";
-
 		$zip_name = "{$type}_{$year}_{$month}.zip";
 		$zip_path = $working_dir . '/' . $zip_name;
+
+		echo 'PDF count : ' . count($pdf_list) . "\n";
+		echo $zip_path."\n";
+		echo "----------------------------\n";
 
 		$zip = new ZipArchive();
 		// Zip ファイルをオープン
@@ -48,15 +49,15 @@ class MakeZipArchive {
 			// Zip ファイルをクローズ
 			$zip->close();
 
-			mb_http_output("pass");
-			header("Content-Type: application/zip");
-			header("Content-Transfer-Encoding: Binary");
-			header("Content-Length: " . filesize($zip_path));
-			header('Content-Disposition: attachment; filename*=UTF-8\'\'' . $zip_name);
-			ob_end_clean();
-			readfile($zip_path);
-			// zipを削除
-			unlink($zip_path);
+			// mb_http_output("pass");
+			// header("Content-Type: application/zip");
+			// header("Content-Transfer-Encoding: Binary");
+			// header("Content-Length: " . filesize($zip_path));
+			// header('Content-Disposition: attachment; filename*=UTF-8\'\'' . $zip_name);
+			// ob_end_clean();
+			// readfile($zip_path);
+			// // zipを削除
+			// unlink($zip_path);
 		}
 		
         exit();

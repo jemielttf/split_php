@@ -40,6 +40,14 @@
 		background-color: #e7e7e7;
 	}
 
+	main h2 {
+		font-size: 1.5rem;
+		font-weight: 600;
+		padding: 1em 0;
+		margin: 0;
+		border-bottom: 1px solid #e3e3e3;
+	}
+
 	main p {
 		font-size: 1.4rem;
 		font-weight: 300;
@@ -85,7 +93,7 @@
 		font-weight: 500;
 	}
 
-	main dl dd span:nth-of-type(2) {
+	main dl dd span:nth-of-type(n+2) {
 		display: inline-block;
 		/* width: 100px; */
 		margin-left: .5em;
@@ -97,10 +105,12 @@
 		display: inline-block;
 	}
 
+	main dl dd a.download,
 	main dl dd form input[type=submit] {
 		-webkit-appearance: none;
 		font-size: 1.1rem;
 		font-weight: 300;
+		text-decoration: none;
 		color: #fff;
 		padding: 0.2em 1.0em;
 		background-color: #0363de;
@@ -111,6 +121,7 @@
 		transition: background .4s ease-in-out 0s;
 	}
 
+	main dl dd a.download:hover,
 	main dl dd form input[type=submit]:hover {
 		background-color: #0d4082;
 		transition: background .2s ease-out 0s;
@@ -165,6 +176,9 @@
 
 <?php
 date_default_timezone_set('Asia/Tokyo');
+
+define('PHP_PATH', 		'/usr/local/bin/php');
+// define('PHP_PATH', 		'/usr/bin/php');
 
 $cmd = "ps -ax | grep split_pdf_for_commandline.php | grep -v grep";
 exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
@@ -240,14 +254,27 @@ if (count($log_list) > 0) {
 					"<span>({$time_str})</span>";
 
 			if ($is_finish) {
-				$form_str  = 	"<form method='POST' action='./make_zip.php'>";
-				$form_str .= 	"<input type='hidden' name='year' value='{$split_key[0]}'>";
-				$form_str .= 	"<input type='hidden' name='month' value='{$split_key[1]}'>";
-				$form_str .= 	"<input type='hidden' name='type' value='{$type}'>";
-				$form_str .= 	"<input type='submit' value='ダウンロード'>";
-				$form_str .= 	"</form>";
+				$working_dir = "./result/{$split_key[0]}/{$split_key[1]}";
+				$zip_name = "{$type}_{$split_key[0]}_{$split_key[1]}.zip";
+				$zip_path = $working_dir . '/' . $zip_name;
 
-				echo $form_str;
+				if (!file_exists($zip_path)) {
+					$php_path		= PHP_PATH;
+					$cmd = "nohup {$php_path} ./make_zip.php '{$split_key[0]}' '{$split_key[1]}' '{$type}' > ./log/make_zip.log 2>&1 &";
+					exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
+					echo "<span> (zipファイルを作成中です。)</span>";
+				} else {
+					echo "<a class='download' href='$zip_path'>ダウンロード</a>";
+				}
+
+				// $form_str  = 	"<form method='POST' action='./make_zip.php'>";
+				// $form_str .= 	"<input type='hidden' name='year' value='{$split_key[0]}'>";
+				// $form_str .= 	"<input type='hidden' name='month' value='{$split_key[1]}'>";
+				// $form_str .= 	"<input type='hidden' name='type' value='{$type}'>";
+				// $form_str .= 	"<input type='submit' value='ダウンロード'>";
+				// $form_str .= 	"</form>";
+
+				// echo $form_str;
 			}
 
 			echo 	"</dd></dl>\n";
@@ -330,6 +357,15 @@ function load_csv_data($file_xsv, $type = 'csv') {
 	
 	<p>複数ページのPDFとページ分割を指定したCSV又はTSVをアップロードし<br>
 	分割データの保存先を年月を入力してください。</p>
+
+	<h2>実行結果の表示について</h2>
+
+	<p>実行中又は完了データがある「最新の年月」について実行結果を表示します。<br>
+	(例えば「2022年2月」のデータが実行中であれば「2022年1月」の実行結果は表示されなくなります。)<br>
+	また分割処理が完了している場合、zipファイルを作成しダウンロード出来るようになっています。
+	</p>
+
+	<h2>サンプルデータついて</h2>
 
 	<p>テストで使用しているPDF <a href="./data/test_file.pdf" target="_blank">（ダウンロード）</a></p>
 	
