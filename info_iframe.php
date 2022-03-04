@@ -67,7 +67,8 @@
 	}
 
 	main dl dt {
-		width: 8em;
+		width: 7em;
+		font-weight: 500;
 		margin: 0;
 		position: relative;
 		padding-right: 1em;
@@ -89,7 +90,7 @@
 	main dl dd span:nth-of-type(1) {
 		display: inline-block;
 		/* width: 100px; */
-		margin-right: .5em;
+		margin-right: .3em;
 		font-weight: 500;
 	}
 
@@ -166,7 +167,6 @@
 	}
 </style>
 
-
 </head>
 
 
@@ -183,14 +183,12 @@ define('PHP_PATH', 		'/usr/local/bin/php');
 $cmd = "ps -ax | grep split_pdf_for_commandline.php | grep -v grep";
 exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
 
-
-$filelist = get_newest_dir_logs('./log');
-
+$log_dirs = glob('./log/*', GLOB_ONLYDIR);
 $log_list   = array();
-foreach($filelist as $filename) {
-	if(preg_match('@_status\.log$@', $filename, $m)) {
-		$log_list[]  = $filename;
-	}
+
+foreach($log_dirs as $dir) {
+	$files = get_newest_logs($dir);
+	$log_list = array_merge($log_list, $files);
 }
 
 if (count($log_list) > 0) {
@@ -199,86 +197,95 @@ if (count($log_list) > 0) {
 	$task_array = array();
 
 	foreach($log_list as $file_path) {
-		$split_file_path 	= explode('/', $file_path);
-		$length 			= count($split_file_path);
+		$proc_status 	= load_csv_data($file_path);
+		$proc_status 	= $proc_status[0];
 
-		$month	= $split_file_path[$length - 3] . '_' . $split_file_path[$length - 2];
-		$name	= $split_file_path[$length - 1];
-		$type	= explode('_', $name);
-		$type	= $type[0];
-
-		if (empty($task_array[$month])) $task_array[$month] = array();
-		if (empty($task_array[$month][$type])) $task_array[$month][$type] = array();
+		$time			= $proc_status[0];
+		$type			= $proc_status[1];
+		$year 			= $proc_status[2];
+		$month			= $proc_status[3];
+		$status			= $proc_status[4];
 		
-		$task_array[$month][$type][] = $file_path;
+		$month_str 		= "{$year}_{$month}";
+
+		if (empty($task_array[$type])) $task_array[$type] = array();
+		if (empty($task_array[$type][$month_str])) $task_array[$type][$month_str] = array();
+		
+		$task_array[$type][$month_str][] = array(
+			'time' 		=> $time,
+			'status' 	=> $status
+		);
 	}
 
-	foreach($task_array as $key => $month_data) {
-		$split_key = explode('_', $key);
-		$label_month = $split_key[0] . '年' . $split_key[1] . '月分';
-		$count = 0;
+	// print_r($task_array);
+	// echo "<br>\n";
 
-		foreach($month_data as $type => $log_list) {
+	foreach($task_array as $type => $month_array) {
+		$label_type	 =  $type == 'invoice_letter' 				? '請求書'
+						: ($type == 'payment_notice_letter'		? '支払い通知書'
+																: '3個目の書類');
+		$count 			= 0;
+		$is_finish 		= false;
+		$time_stamps 	= array();
+		$month_label	= null;
+
+		foreach($month_array as $month_str => $month_data) {
 			$count++;
 
-			$label_type =  $type == 'invoice-letter' 			? '請求書'
-						: ($type == 'payment-notice-letter'
-																? '支払い通知書'
-																: '3個目の書類');
+			if (empty($month_label)) {
+				$month_label = explode('_', $month_str);
+			}
 
-			
 			$fin_count = 0;
-			$is_finish = false;
-			$time_stamps = array();
-
-			foreach($log_list as $path) {
-				$proc_status = load_csv_data($path);
-				$proc_status = $proc_status[0];
-				if ($proc_status[1] == 'fin') $fin_count++;
-				$time_stamps[] = new DateTime($proc_status[0]);
-			}
-			$is_finish = $fin_count == count($log_list) ? true : false;
-
-			$status_time = '';
-			foreach($time_stamps as $time) {
-				if (empty($status_time)) $status_time = $time;
-				else $status_time = $status_time < $time ? $time : $status_time;
-			}
-			$status_time = $is_finish ? $status_time : new DateTime();
-			$time_str = $status_time->format('Y.m.d H:i:s');
-
-			echo 	'<dl><dt>' . 
-					($count == 1 ? $label_month : '') . 
-					"</dt><dd><span>{$label_type}のPDF分割</span>" . 
-					($is_finish ? 'は完了しました。' : 'を処理中です。') .
-					"<span>({$time_str})</span>";
-
-			if ($is_finish) {
-				$working_dir = "./result/{$split_key[0]}/{$split_key[1]}";
-				$zip_name = "{$type}_{$split_key[0]}_{$split_key[1]}.zip";
-				$zip_path = $working_dir . '/' . $zip_name;
-
-				if (!file_exists($zip_path)) {
-					$php_path		= PHP_PATH;
-					$cmd = "nohup {$php_path} ./make_zip.php '{$split_key[0]}' '{$split_key[1]}' '{$type}' > ./log/make_zip.log 2>&1 &";
-					exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
-					echo "<span> (zipファイルを作成中です。)</span>";
-				} else {
-					echo "<a class='download' href='$zip_path'>ダウンロード</a>";
-				}
-
-				// $form_str  = 	"<form method='POST' action='./make_zip.php'>";
-				// $form_str .= 	"<input type='hidden' name='year' value='{$split_key[0]}'>";
-				// $form_str .= 	"<input type='hidden' name='month' value='{$split_key[1]}'>";
-				// $form_str .= 	"<input type='hidden' name='type' value='{$type}'>";
-				// $form_str .= 	"<input type='submit' value='ダウンロード'>";
-				// $form_str .= 	"</form>";
-
-				// echo $form_str;
+			foreach($month_data as $params) {
+				if ($params['status'] == 'fin') $fin_count++;
+				$time_stamps[] = new DateTime($params['time']);
 			}
 
-			echo 	"</dd></dl>\n";
+			$is_finish = $fin_count == count($month_data) ? true : false;
 		}
+
+		
+
+		$status_time = '';
+		foreach($time_stamps as $time) {
+			if (empty($status_time)) $status_time = $time;
+			else $status_time = $status_time < $time ? $time : $status_time;
+		}
+		$status_time = $is_finish ? $status_time : new DateTime();
+		$time_str = $status_time->format('Y.m.d H:i:s');
+
+		echo 	'<dl><dt>' . 
+				($count == 1 ? $label_type : '') . 
+				"</dt><dd><span>{$month_label[0]}年{$month_label[1]}月分</span>のPDF分割" . 
+				($is_finish ? 'は完了しました。' : 'を処理中です。') .
+				"<span>({$time_str})</span>";
+
+		if ($is_finish) {
+			$working_dir = "./data/{$type}/{$month_label[0]}_{$month_label[1]}/members/";
+			$zip_name = "{$type}-{$month_label[0]}_{$month_label[1]}.zip";
+			$zip_path = $working_dir . $zip_name;
+
+			if (!file_exists($zip_path)) {
+				$php_path		= PHP_PATH;
+				$cmd = "nohup {$php_path} ./make_zip.php '{$month_label[0]}' '{$month_label[1]}' '{$type}' >> ./log/make_zip.log 2>&1 &";
+				exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
+				echo "<span> (zipファイルを作成中です。)</span>";
+			} else {
+				echo "<a class='download' href='$zip_path'>ダウンロード</a>";
+			}
+
+			// $form_str  = 	"<form method='POST' action='./make_zip.php'>";
+			// $form_str .= 	"<input type='hidden' name='year' value='{$split_key[0]}'>";
+			// $form_str .= 	"<input type='hidden' name='month' value='{$split_key[1]}'>";
+			// $form_str .= 	"<input type='hidden' name='type' value='{$type}'>";
+			// $form_str .= 	"<input type='submit' value='ダウンロード'>";
+			// $form_str .= 	"</form>";
+
+			// echo $form_str;
+		}
+
+		echo 	"</dd></dl>\n";
 	}
 
 	echo "<br><br>\n";
@@ -291,37 +298,37 @@ if (count($log_list) > 0) {
 }
 
 
-function get_newest_dir_logs($dir) {        
-	$filenames          = glob($dir . '/*', GLOB_ONLYDIR);
+function get_newest_logs($dir) {        
+	$files = glob($dir . '/*_status.log', );
 
-	$target_dirnames    = array();
-	$last_dirname       = null;
-
-	foreach($filenames as $filename) {
-		$target_dirnames[]  = $filename;
-	}
-
-	// 最大インデックス付きの親ディレクトリを特定
-	$dir_num_y = get_large_num_dir($target_dirnames);
-	$year_dirname = $dir . '/' . $dir_num_y;
-
-	$filenames = glob($year_dirname . '/*', GLOB_ONLYDIR);
-	$target_dirnames    = array();
-
-	foreach($filenames as $filename) {
-		if(strpos($filename, $year_dirname) === 0) {
-			$target_dirnames[]  = $filename;
+	$newest_file_date = null;
+	$newest_file = null;
+	foreach($files as $file) {
+		$file_date = filemtime($file);
+		
+		if (empty($newest_file_date)) {
+			$newest_file_date = $file_date;
+			$newest_file = $file;
+		} else {
+			if ($newest_file_date < $file_date) {
+				$newest_file_date = $file_date;
+				$newest_file = $file;
+			}
 		}
 	}
 
-	// 最大インデックス付きの親ディレクトリを特定
-	$dir_num_m = get_large_num_dir($target_dirnames);
-	$last_dirname   = $year_dirname . '/' . $dir_num_m;
+	// echo date('Y-m-d H:i:s', $newest_file_date) . " ({$newest_file})<br>\n";
 
-	// 最大インデックス付きの親ディレクトリの中のファイルリスト
-	$file_list      = glob($last_dirname . '/*');
+	$file_proc_date = explode('-', $newest_file);
+	$file_proc_date = explode('_', $file_proc_date[1]);
+	$file_proc_date = "{$file_proc_date[0]}_{$file_proc_date[1]}";
 
-	return $file_list;
+	$proc_files = array();
+	foreach($files as $file) {
+		if (preg_match("@{$file_proc_date}@", $file)) $proc_files[] = $file;
+	}
+
+	return $proc_files;
 }
 
 function get_large_num_dir($dirs) {
@@ -360,8 +367,7 @@ function load_csv_data($file_xsv, $type = 'csv') {
 
 	<h2>実行結果の表示について</h2>
 
-	<p>実行中又は完了データがある「最新の年月」について実行結果を表示します。<br>
-	(例えば「2022年2月」のデータが実行中であれば「2022年1月」の実行結果は表示されなくなります。)<br>
+	<p>「請求書」又は「支払い通知書」それぞれについて最後に実行された年月の結果を表示します。<br>
 	また分割処理が完了している場合、zipファイルを作成しダウンロード出来るようになっています。
 	</p>
 

@@ -11,18 +11,22 @@ $year		= $argv[5];
 $month		= $argv[6];
 $proc_id	= $argv[7];
 
+$time_1 = new DateTime();
+echo '[' . $time_1->format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "\n\n";
+
+$dir_time = explode('_', $proc_id);
+$dir_time = "{$dir_time[0]}_{$dir_time[1]}";
+
 define('CURRENT_DIR', 	__DIR__);
-define('DATA_BASE', 	'/data/');
-define('RESULT_BASE', 	'/result/');
-define('DATA_DIR', 		CURRENT_DIR . DATA_BASE . "upload/{$year}/{$month}/");
-define('RESULT_DIR', 	CURRENT_DIR . RESULT_BASE . "{$year}/{$month}/");
-define('LOG_DIR', 		CURRENT_DIR . "/log/");
+define('DATA_BASE', 	"/data/{$pdf_type}/{$year}_{$month}-{$dir_time}");
+define('DATA_DIR', 		CURRENT_DIR . DATA_BASE . '/source/');
+define('RESULT_DIR', 	CURRENT_DIR . DATA_BASE . '/members/');
+define('LOG_BASE', 		CURRENT_DIR . "/log/");
+define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 
 define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
 // define('PDFtk_PATH', 	'/usr/bin/pdftk');
 
-$time_1 = new DateTime();
-echo '[' . $time_1->format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "\n\n";
 write_status_log($proc_id, 'start', $year, $month, $pdf_type);
 
 for ($i = 1; $i < count($argv); $i++) {
@@ -70,7 +74,7 @@ write_status_log($proc_id, 'fin', $year, $month, $pdf_type);
 
 // 以下function
 
-function load_csv_data($file_xsv, $type = 'csv') {
+function load_csv_data($file_xsv, $type = 'csv', $skip_row_1 = true) {
 	$file = new SplFileObject($file_xsv, 'r');
 	$file->setFlags(SplFileObject::READ_CSV);
 	if ($type == 'tsv') $file->setCsvControl("\t");
@@ -80,7 +84,7 @@ function load_csv_data($file_xsv, $type = 'csv') {
 	$count = 0;
 	foreach ($file as $row) {
 		$count++;
-		if ($count == 1) continue;
+		if ($skip_row_1 && $count == 1) continue;
 		if (!is_null($row[0])) array_push($array, $row);
 	}
 
@@ -94,7 +98,7 @@ function split_PDF($pdf_path, $data, &$start, $pdf_type, $year, $month, $total_p
 
 	if ($end < $start) return array('error' => 1, 'error_message' => "分割終了ページ ({$end}) が開始ページ ({$start}) よりも小さいです。");
 	
-	$file_name 	= "{$memberCd}_{$year}{$month}_{$pdf_type}" . '.pdf';
+	$file_name 	= "{$pdf_type}-{$year}_{$month}-{$memberCd}.pdf";
 	$save_dir 	= RESULT_DIR;
 	$pdftk		= PDFtk_PATH;
 
@@ -124,24 +128,82 @@ function echo_error($error) {
 }
 
 function write_error_log($proc_id, $memberCd, $error_msg, $year, $month, $pdf_type) {
-	$log_path = LOG_DIR . 'error.log';
+	$log_path = LOG_BASE . 'error.log';
 
 	$log = fopen($log_path, 'a');
 	if ($log === FALSE) echo 'エラーログの書き込みに失敗しました。';
 
 	$time = new DateTime();
-	fputcsv($log, array($time->format('Y-m-d H:i:s'), "{$year}_{$month}", $pdf_type, $proc_id, $memberCd, $error_msg, LOG_DIR . "{$year}/{$month}/{$proc_id}.log"));
+	fputcsv($log, array($time->format('Y-m-d H:i:s'), "{$year}_{$month}", $pdf_type, $proc_id, $memberCd, $error_msg, LOG_DIR . "{$year}_{$month}/{$proc_id}.log"));
 	fclose($log);
 }
 
 function write_status_log($proc_id, $msg, $year, $month, $pdf_type) {
-	$log_path = LOG_DIR . "{$year}/{$month}/{$pdf_type}_{$proc_id}_status.log";
+	$log_path = LOG_DIR . "{$pdf_type}-{$proc_id}_status.log";
 
 	$log = fopen($log_path, 'w');
 	if ($log === FALSE) write_error_log($proc_id, '', 'ステータスログの書き込みに失敗しました。', $year, $month, $pdf_type);
 
 	$time = new DateTime();
-	fputcsv($log, array($time->format('Y-m-d\TH:i:s'), $msg));
+	fputcsv($log, array($time->format('Y-m-d\TH:i:s'), $pdf_type, $year, $month, $msg));
 	fclose($log);
+
+	check_all_done($proc_id, $year, $month, $pdf_type);
 }
+
+function check_all_done($proc_id, $year, $month, $pdf_type) {
+	$proc_date = explode('_', $proc_id);
+	$proc_date = "{$proc_date[0]}_{$proc_date[1]}";
+
+	$file_names = glob(LOG_DIR . '*_status.log', );
+	$log_list = array();
+
+	foreach($file_names as $file_name) {
+		if (preg_match("@({$proc_date})@", $file_name, $m)) {
+			$log_list[] = $file_name;
+		}
+	}
+
+	$fin_count = 0;
+	$is_finish = false;
+	$time_stamps = array();
+	foreach($log_list as $path) {
+		$proc_status = load_csv_data($path, 'csv', false);
+		$proc_status = $proc_status[0];
+		if ($proc_status[count($proc_status) - 1] == 'fin') $fin_count++;
+		$time_stamps[] = $proc_status[0];
+	}
+	$is_finish = $fin_count == count($log_list) ? true : false;
+
+	if ($is_finish) {
+		echo "[{$time_stamps[count($time_stamps) - 1]}] すべての処理が終了しました。\n";
+		rename_working_dir($proc_id, $year, $month, $pdf_type);
+	}
+}
+
+function rename_working_dir($proc_id, $year, $month, $pdf_type) {
+	$working_dir	= CURRENT_DIR . DATA_BASE;
+	$data_dir		= explode('-', $working_dir);
+	$data_dir		= $data_dir[0];
+	echo $data_dir . "\n";
+
+	if (file_exists($data_dir)) {
+		exec("rm -rf {$data_dir}", $outupt);
+
+		if (count($outupt) > 1) {
+			echo "旧ディレクトリの削除に失敗しました。\n";
+			write_error_log($proc_id, '', '旧ディレクトリの削除に失敗しました。', $year, $month, $pdf_type);
+			return;
+		} else {
+			echo "旧ディレクトリの削除しました。\n";
+		}
+	}
+
+	if (rename($working_dir, $data_dir)) {
+		echo "作業ディレクトリをリネームしました。\n";
+	} else {
+		echo "作業ディレクトリのリネームに失敗しました。\n";
+	}
+}
+
 

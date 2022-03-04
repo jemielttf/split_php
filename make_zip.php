@@ -6,6 +6,12 @@ $year 	= $argv[1];
 $month 	= $argv[2];
 $type	= $argv[3];
 
+define('CURRENT_DIR', 	__DIR__);
+define('DATA_BASE', 	"/data/{$type}/{$year}_{$month}");
+define('DATA_DIR', 		CURRENT_DIR . DATA_BASE . '/source/');
+define('RESULT_DIR', 	CURRENT_DIR . DATA_BASE . '/members/');
+define('LOG_DIR', 		CURRENT_DIR . "/log/");
+
 class MakeZipArchive {
     protected $year;
     protected $month;
@@ -20,18 +26,18 @@ class MakeZipArchive {
     }
     
     public function init($year, $month, $type) {
-        $working_dir = "./result/{$year}/{$month}";
+        $working_dir = RESULT_DIR;
 		$file_list = glob($working_dir . '/*');
 
 		$pdf_list   = array();
 		foreach($file_list as $filename) {
-			if(preg_match("@_{$type}\.pdf$@", $filename, $m)) {
+			if(preg_match("@\.pdf$@", $filename, $m)) {
 				$pdf_list[]  = $filename;
 			}
 		}
 
-		$zip_name = "{$type}_{$year}_{$month}.zip";
-		$zip_path = $working_dir . '/' . $zip_name;
+		$zip_name = "{$type}-{$year}_{$month}.zip";
+		$zip_path = $working_dir . $zip_name;
 
 		echo 'PDF count : ' . count($pdf_list) . "\n";
 		echo $zip_path."\n";
@@ -43,7 +49,7 @@ class MakeZipArchive {
 
 		if ($res === true) {
 			foreach ($pdf_list as $value) {
-				$new_name = str_replace($working_dir . '/', '', $value);
+				$new_name = str_replace($working_dir, '', $value);
 				$zip->addFile($value, $new_name);
 			}
 			// Zip ファイルをクローズ

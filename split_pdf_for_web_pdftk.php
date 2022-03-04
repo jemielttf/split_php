@@ -6,7 +6,7 @@ ini_set('max_execution_time', 0);
 date_default_timezone_set('Asia/Tokyo');
 
 $pdf_type	= $_POST['pdf_type'];
-$parallel	= $_POST['parallel'];
+$parallel	= 'multi';
 $page_count	= $_POST['page_count'];
 $year		= $_POST['year'];
 $month		= str_pad($_POST['month'], 2, 0, STR_PAD_LEFT);
@@ -20,13 +20,11 @@ echo '[' . $time_1->format('Y-m-d H:i:s') . '] スクリプトを開始します
 define('DOMAIN', 		$_SERVER['HTTP_HOST']);
 define('PAGE_PATH', 	makePagePath(DOMAIN, $_SERVER['REQUEST_URI']));
 define('CURRENT_DIR', 	__DIR__);
-define('DATA_BASE', 	'/data/');
-define('RESULT_BASE', 	'/result/');
-define('DATA_DIR', 		CURRENT_DIR . DATA_BASE . "upload/{$year}/{$month}/");
-define('DATA_PATH', 	PAGE_PATH . DATA_BASE . "upload/{$year}/{$month}/");
-define('RESULT_DIR', 	CURRENT_DIR . RESULT_BASE . "{$year}/{$month}/");
-define('RESULT_PATH', 	PAGE_PATH . RESULT_BASE . "{$year}/{$month}/");
-define('LOG_DIR', 		CURRENT_DIR . "/log/{$year}/{$month}/");
+define('DATA_BASE', 	"/data/{$pdf_type}/{$year}_{$month}-{$time_1->format('Ymd_His')}");
+define('DATA_DIR', 		CURRENT_DIR . DATA_BASE . '/source/');
+define('RESULT_DIR', 	CURRENT_DIR . DATA_BASE . '/members/');
+define('LOG_BASE', 		CURRENT_DIR . "/log/");
+define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 
 define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
 define('PHP_PATH', 		'/usr/local/bin/php');
@@ -36,8 +34,6 @@ define('PHP_PATH', 		'/usr/local/bin/php');
 // echo PAGE_PATH  . "<br>\n";
 // echo DATA_DIR . "<br>\n";
 // echo RESULT_DIR . "<br><br>\n";
-// echo DATA_PATH. "<br>\n";
-// echo RESULT_PATH. "<br><br>\n";
 
 
 if (file_exists(DATA_DIR)) {
@@ -110,91 +106,85 @@ if (empty($file_pdf) || empty($file_xsv)) {
 	return;
 }
 
+@ob_flush();
+@flush();
+
 // TSVを読み込み
 $member_data = load_csv_data($file_xsv, $mode);
 
-// $uri = DATA_PATH . $file_pdf['name'];
-// echo "<a href='{$uri}' target='_blank'>分割元PDFファイル</a>\n";
-
 $current_start_page = 1;
-if ($parallel == 'single') {
-	for ($count = 0; $count < count($member_data); $count++) {
-		echo "<br>------------------------<br>\n";
-		
-		$file_link = split_PDF($file_pdf['path'], $member_data[$count], $current_start_page, $pdf_type, $year, $month);
 
-		echo $file_link;
+$split_member_data = splitMemberData($member_data, $page_count);
+$file_list = array();
+$split_file_data;
+
+for ($i = 0; $i < count($split_member_data); $i++) {
+	$split_file_data = $split_member_data[$i];
+	$pages = 0;
+	echo "\n<br>--------------------------------------------<br>\n";
+	// echo count($split_file_data) . "<br>\n";
+	foreach ($split_file_data as $key => $sub_array) {
+		$pages = $pages + $sub_array[count($sub_array) - 2];
+		// foreach ($sub_array as $key2 => $value) {
+		// 	echo "Key => {$key2}, value => {$value}<br>\n";
+		// }
+		// echo $sub_array[count($sub_array) - 2] . "<br>\n";
+		// echo "\n<br>-----------------<br>\n";
 	}
 
-	echo "<br>------------------------<br><br>\n";
-	$time_2 = new DateTime();
-	$diff = $time_2->diff($time_1);
-	echo '[' . $time_2->format('Y-m-d H:i:s')  . '] スクリプトは終了しました。'. "<br>\n";
-	echo '処理にかかった時間は' . $diff->format('%h:%i:%s') . '秒です。' . "<br>\n";
+	// echo "Pages => {$pages}<br>\n";
 
-} elseif ($parallel == 'multi') {
-	$split_member_data = splitMemberData($member_data, $page_count);
-	$file_list = array();
-	$split_file_data;
-	
-	for ($i = 0; $i < count($split_member_data); $i++) {
-		$split_file_data = $split_member_data[$i];
-		$pages = 0;
-		echo "\n<br>--------------------------------------------<br>\n";
-		// echo count($split_file_data) . "<br>\n";
-		foreach ($split_file_data as $key => $sub_array) {
-			$pages = $pages + $sub_array[count($sub_array) - 2];
-			// foreach ($sub_array as $key2 => $value) {
-			// 	echo "Key => {$key2}, value => {$value}<br>\n";
-			// }
-			// echo $sub_array[count($sub_array) - 2] . "<br>\n";
-			// echo "\n<br>-----------------<br>\n";
-		}
+	$split_data = array("tmp_{$time_1->format('Ymd_His')}_{$i}", $pages);
 
-		// echo "Pages => {$pages}<br>\n";
-	
-		$split_data = array("tmp_{$i}", $pages);
+	$result = split_tmp_PDF($file_pdf['path'], $split_data, $current_start_page, $split_file_data);
 
-		$result = split_tmp_PDF($file_pdf['path'], $split_data, $current_start_page, $split_file_data);
-
-		if ($result['error']) echo 'エラー : ' . $result['error_message'] . "\n";
-		else {
-			array_push($file_list, $result['data']);
-			echo  $result['data']['pdf'] . "<br>\n";
-			echo  $result['data']['csv'] . "<br>\n";
-		}
-
+	if ($result['error']) {
+		echo 'エラー : ' . $result['error_message'] . "<br>\n";
 		echo "--------------------------------------------<br>\n";
+		echo "エラーにより処理が中断しました。\n";
+		return;
+	} else {
+		array_push($file_list, $result['data']);
+		echo  $result['data']['pdf'] . "<br>\n";
+		echo  $result['data']['csv'] . "<br>\n";
 	}
 
-	// print_r($file_list);
-
-	$time 		= new DateTime();
-	for ($i = 0; $i < count($file_list); $i++) {
-		$file_data		= $file_list[$i];
-		$output 		= null;
-		$php_path		= PHP_PATH;
-		$file_pdf_path	= $file_data['pdf'];
-		$file_xsv_path	= $file_data['csv'];
-		$time_str 		= $time->format('Ymd_His') . '_' . $i;
-		$log_dir		= LOG_DIR;
-
-		$cmd = "nohup {$php_path} ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' 'cvs' '{$year}' '{$month}' '$time_str' >> {$log_dir}{$pdf_type}_{$time_str}.log 2>&1 &";
-
-		exec($cmd, $output);
-		echo "\n--------------------------------------------<br>\n";
-		// echo $cmd . "<br>\n";
-		echo "バックグラウンドで処理を実行中です。({$log_dir}{$time_str}.log)<br>\n";
-	}
-
-
-	// echo "<script>\n";
-	// echo "setTimeout(function () {\n";
-	// echo "	location.href = './info_iframe.php';\n";
-	// echo "}, 2000);\n";
-	// echo "</script>\n";
+	echo "--------------------------------------------<br>\n";
+	@ob_flush();
+	@flush();
 }
 
+// print_r($file_list);
+
+// $time 		= new DateTime();
+for ($i = 0; $i < count($file_list); $i++) {
+	$file_data		= $file_list[$i];
+	$output 		= null;
+	$php_path		= PHP_PATH;
+	$file_pdf_path	= $file_data['pdf'];
+	$file_xsv_path	= $file_data['csv'];
+	$time_str 		= $time_1->format('Ymd_His') . '_' . $i;
+	$log_dir		= LOG_DIR;
+
+	$cmd = "nohup {$php_path} ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' 'cvs' '{$year}' '{$month}' '$time_str' >> {$log_dir}{$pdf_type}-{$time_str}.log 2>&1 &";
+
+	exec($cmd, $output);
+	echo "\n--------------------------------------------<br>\n";
+	// echo $cmd . "<br>\n";
+	echo "バックグラウンドで処理を実行中です。({$log_dir}{$pdf_type}-{$time_str}.log)<br>\n";
+
+	@ob_flush();
+	@flush();
+}
+
+echo "\n--------------------------------------------<br>\n";
+echo "<a href='./info_iframe.php'>実行状況はこちらから確認できます。</a>";
+
+// echo "<script>\n";
+// echo "setTimeout(function () {\n";
+// echo "	location.href = './info_iframe.php';\n";
+// echo "}, 2000);\n";
+// echo "</script>\n";
 
 
 
@@ -205,7 +195,6 @@ if ($parallel == 'single') {
 
 
 function load_csv_data($file, $type = 'csv') {
-	$uri = DATA_PATH . $file['name'];
 	// echo "<br>------------------------<br>\n";
 	// echo "<a href='{$uri}' target='_blank'>PDFファイル分割データ用TSV/CSVファイル</a><br>\n";
 
@@ -225,35 +214,6 @@ function load_csv_data($file, $type = 'csv') {
 	return $array;
 }
 
-function split_PDF($pdf_path, $data, &$start, $pdf_type, $year, $month) {
-	$memberCd	= $data[0];
-	$pages		= (int)$data[count($data) - 2];
-	$end 		= $start + $pages - 1;
-
-	if ($end < $start) {
-		return json_encode(array('error' => 1, 'error_message' => "終了ページ ({$end}) が開始ページ ({$start}) よりも小さいです。"), JSON_UNESCAPED_UNICODE);
-	}
-	
-	$file_name 	= "{$memberCd}_{$year}{$month}_{$pdf_type}" . '.pdf';
-	$save_dir 	= RESULT_DIR;
-	$pdftk		= PDFtk_PATH;
-
-	$cmd = "{$pdftk} {$pdf_path} cat {$start}-{$end} output {$save_dir}{$file_name} >> ./log/pdftk.log 2>&1";
-	// echo $cmd . "<br>\n";
-	exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
-
-	foreach ($output as $key => $value) {
-		echo $key . ' => ' . $value . "<br>\n";
-	}
-
-	echo $result . " \n";
-
-	$uri = RESULT_PATH . $file_name;
-	$start = $end + 1;
-
-	return "<a href='{$uri}' target='_blank'>" . str_replace('//', '', $uri) . "</a>\n";
-}
-
 function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data) {
 	$prefix		= $data[0];
 	$pages		= (int)$data[1];
@@ -261,8 +221,8 @@ function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data) {
 	
 	if ($end < $start) return array('error' => 1, 'error_message' => "分割終了ページ ({$end}) が開始ページ ({$start}) よりも小さいです。");
 	
-	$file_name 		= "{$prefix}_{$start}-{$end}" . '.pdf';
-	$file_name_csv 	= "{$prefix}_{$start}-{$end}" . '.csv';
+	$file_name 		= "{$prefix}-{$start}_{$end}" . '.pdf';
+	$file_name_csv 	= "{$prefix}-{$start}_{$end}" . '.csv';
 	$save_dir 		= DATA_DIR;
 	$pdftk			= PDFtk_PATH;
 

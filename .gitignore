@@ -1,5 +1,7 @@
 .DS_Store
 /result
 /data/upload
+/data/invoice_letter
+/data/payment_notice_letter
 /vendor
 /log
