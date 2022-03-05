@@ -299,7 +299,7 @@ if (count($log_list) > 0) {
 
 
 function get_newest_logs($dir) {        
-	$files = glob($dir . '/*_status.log', );
+	$files = glob($dir . '/*_status.log');
 
 	$newest_file_date = null;
 	$newest_file = null;
@@ -367,7 +367,7 @@ function load_csv_data($file_xsv, $type = 'csv') {
 
 	<h2>実行結果の表示について</h2>
 
-	<p>「請求書」又は「支払い通知書」それぞれについて最後に実行された年月の結果を表示します。<br>
+	<p>「請求書」又は「支払い通知書」それぞれについて最後に実行された月の結果を表示します。<br>
 	また分割処理が完了している場合、zipファイルを作成しダウンロード出来るようになっています。
 	</p>
 

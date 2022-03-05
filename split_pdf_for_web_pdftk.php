@@ -35,6 +35,7 @@ define('PHP_PATH', 		'/usr/local/bin/php');
 // echo DATA_DIR . "<br>\n";
 // echo RESULT_DIR . "<br><br>\n";
 
+require_once './process_log.php';
 
 if (file_exists(DATA_DIR)) {
 	echo DATA_DIR . "は既に存在します。<br>\n";
@@ -71,6 +72,11 @@ if (file_exists(LOG_DIR)) {
 		return;
     }
 }
+
+echo "<br>------------------------------------------------<br>\n";
+
+$proccess_log = set_process_log($time_1->format('Ymd_His'), $year, $month, $pdf_type);
+print_r($proccess_log);
 
 echo "<br>------------------------------------------------<br>\n";
 foreach ($_FILES as $key => $data) {
@@ -194,10 +200,7 @@ echo "<a href='./info_iframe.php'>実行状況はこちらから確認できま�
 // 以下function
 
 
-function load_csv_data($file, $type = 'csv') {
-	// echo "<br>------------------------<br>\n";
-	// echo "<a href='{$uri}' target='_blank'>PDFファイル分割データ用TSV/CSVファイル</a><br>\n";
-
+function load_csv_data($file, $type = 'csv', $skip_first_row = true) {
 	$file = new SplFileObject($file['path'], 'r');
 	$file->setFlags(SplFileObject::READ_CSV);
 	if ($type == 'tsv') $file->setCsvControl("\t");
@@ -207,7 +210,7 @@ function load_csv_data($file, $type = 'csv') {
 	$count = 0;
 	foreach ($file as $row) {
 		$count++;
-		if ($count == 1) continue;
+		if ($skip_first_row && $count == 1) continue;
 		if (!is_null($row[0])) array_push($array, $row);
 	}
 

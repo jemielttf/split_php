@@ -27,6 +27,8 @@ define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
 // define('PDFtk_PATH', 	'/usr/bin/pdftk');
 
+require_once './process_log.php';
+
 write_status_log($proc_id, 'start', $year, $month, $pdf_type);
 
 for ($i = 1; $i < count($argv); $i++) {
@@ -74,7 +76,7 @@ write_status_log($proc_id, 'fin', $year, $month, $pdf_type);
 
 // 以下function
 
-function load_csv_data($file_xsv, $type = 'csv', $skip_row_1 = true) {
+function load_csv_data($file_xsv, $type = 'csv', $skip_first_row = true) {
 	$file = new SplFileObject($file_xsv, 'r');
 	$file->setFlags(SplFileObject::READ_CSV);
 	if ($type == 'tsv') $file->setCsvControl("\t");
@@ -84,7 +86,7 @@ function load_csv_data($file_xsv, $type = 'csv', $skip_row_1 = true) {
 	$count = 0;
 	foreach ($file as $row) {
 		$count++;
-		if ($skip_row_1 && $count == 1) continue;
+		if ($skip_first_row && $count == 1) continue;
 		if (!is_null($row[0])) array_push($array, $row);
 	}
 
@@ -155,7 +157,7 @@ function check_all_done($proc_id, $year, $month, $pdf_type) {
 	$proc_date = explode('_', $proc_id);
 	$proc_date = "{$proc_date[0]}_{$proc_date[1]}";
 
-	$file_names = glob(LOG_DIR . '*_status.log', );
+	$file_names = glob(LOG_DIR . '*_status.log');
 	$log_list = array();
 
 	foreach($file_names as $file_name) {
@@ -178,6 +180,8 @@ function check_all_done($proc_id, $year, $month, $pdf_type) {
 	if ($is_finish) {
 		echo "[{$time_stamps[count($time_stamps) - 1]}] すべての処理が終了しました。\n";
 		rename_working_dir($proc_id, $year, $month, $pdf_type);
+
+		set_process_log($proc_date, $year, $month, $pdf_type, 'fin');
 	}
 }
 
