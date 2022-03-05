@@ -232,7 +232,7 @@ function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data) {
 	$pdf_total_pages = (int)$output[0];
 	if ($pdf_total_pages < $end) return array('error' => 1, 'error_message' => "分割終了ページ ({$end}) が総ページ数 ({$pdf_total_pages}) よりも大きいです。");
 
-	$cmd = "{$pdftk} {$pdf_path} cat {$start}-{$end} output {$save_dir}{$file_name} >> ./log/pdftk.log 2>&1";
+	$cmd = "{$pdftk} {$pdf_path} cat {$start}-{$end} output {$save_dir}{$file_name} >> " . LOG_BASE . "pdftk.log 2>&1";
 	// echo $cmd . "<br>\n";
 	exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
 
