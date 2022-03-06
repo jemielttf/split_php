@@ -177,8 +177,7 @@
 <?php
 date_default_timezone_set('Asia/Tokyo');
 
-define('PHP_PATH', 		'/usr/local/bin/php');
-// define('PHP_PATH', 		'/usr/bin/php');
+require_once './utils.php';
 
 $cmd = "ps -ax | grep split_pdf_for_commandline.php | grep -v grep";
 exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
@@ -197,7 +196,7 @@ if (count($log_list) > 0) {
 	$task_array = array();
 
 	foreach($log_list as $file_path) {
-		$proc_status 	= load_csv_data($file_path);
+		$proc_status 	= load_csv_data($file_path, 'csv', false);
 		$proc_status 	= $proc_status[0];
 
 		$time			= $proc_status[0];
@@ -339,22 +338,6 @@ function get_large_num_dir($dirs) {
 		$dir_num       = (int)$m[1] > (int)$dir_num ? $m[1] : $dir_num;
 	}
 	return $dir_num;
-}
-
-function load_csv_data($file_xsv, $type = 'csv') {
-	$file = new SplFileObject($file_xsv, 'r');
-	$file->setFlags(SplFileObject::READ_CSV);
-	if ($type == 'tsv') $file->setCsvControl("\t");
-
-	$array = array();
-
-	$count = 0;
-	foreach ($file as $row) {
-		$count++;
-		if (!is_null($row[0])) array_push($array, $row);
-	}
-
-	return $array;
 }
 
 ?>

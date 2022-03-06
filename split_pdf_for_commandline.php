@@ -24,10 +24,7 @@ define('RESULT_DIR', 	CURRENT_DIR . DATA_BASE . '/members/');
 define('LOG_BASE', 		CURRENT_DIR . "/log/");
 define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 
-define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
-// define('PDFtk_PATH', 	'/usr/bin/pdftk');
-
-require_once './process_log.php';
+require_once './utils.php';
 
 write_status_log($proc_id, 'start', $year, $month, $pdf_type);
 
@@ -75,23 +72,6 @@ write_status_log($proc_id, 'fin', $year, $month, $pdf_type);
 
 
 // 以下function
-
-function load_csv_data($file_xsv, $type = 'csv', $skip_first_row = true) {
-	$file = new SplFileObject($file_xsv, 'r');
-	$file->setFlags(SplFileObject::READ_CSV);
-	if ($type == 'tsv') $file->setCsvControl("\t");
-
-	$array = array();
-
-	$count = 0;
-	foreach ($file as $row) {
-		$count++;
-		if ($skip_first_row && $count == 1) continue;
-		if (!is_null($row[0])) array_push($array, $row);
-	}
-
-	return $array;
-}
 
 function split_PDF($pdf_path, $data, &$start, $pdf_type, $year, $month, $total_pages) {
 	$memberCd	= $data[0];

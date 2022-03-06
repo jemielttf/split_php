@@ -1,5 +1,28 @@
 <?php
 
+define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
+define('PHP_PATH', 		'/usr/local/bin/php');
+// define('PDFtk_PATH', 	'/usr/bin/pdftk');
+// define('PHP_PATH', 		'/usr/bin/php');
+
+
+function load_csv_data($file_xsv, $type = 'csv', $skip_first_row = true) {
+	$file = new SplFileObject($file_xsv, 'r');
+	$file->setFlags(SplFileObject::READ_CSV);
+	if ($type == 'tsv') $file->setCsvControl("\t");
+
+	$array = array();
+
+	$count = 0;
+	foreach ($file as $row) {
+		$count++;
+		if ($skip_first_row && $count == 1) continue;
+		if (!is_null($row[0])) array_push($array, $row);
+	}
+
+	return $array;
+}
+
 function set_process_log($proc_time, $year, $month, $pdf_type, $mode = 'new') {
 	$log_path = LOG_BASE . "process.log";
 

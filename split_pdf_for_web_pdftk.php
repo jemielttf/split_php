@@ -26,16 +26,11 @@ define('RESULT_DIR', 	CURRENT_DIR . DATA_BASE . '/members/');
 define('LOG_BASE', 		CURRENT_DIR . "/log/");
 define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 
-define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
-define('PHP_PATH', 		'/usr/local/bin/php');
-// define('PDFtk_PATH', 	'/usr/bin/pdftk');
-// define('PHP_PATH', 		'/usr/bin/php');
-
 // echo PAGE_PATH  . "<br>\n";
 // echo DATA_DIR . "<br>\n";
 // echo RESULT_DIR . "<br><br>\n";
 
-require_once './process_log.php';
+require_once './utils.php';
 
 if (file_exists(DATA_DIR)) {
 	echo DATA_DIR . "は既に存在します。<br>\n";
@@ -116,7 +111,7 @@ if (empty($file_pdf) || empty($file_xsv)) {
 @flush();
 
 // TSVを読み込み
-$member_data = load_csv_data($file_xsv, $mode);
+$member_data = load_csv_data($file_xsv['path'], $mode);
 
 $current_start_page = 1;
 
@@ -198,24 +193,6 @@ echo "<a href='./info_iframe.php'>実行状況はこちらから確認できま�
 
 
 // 以下function
-
-
-function load_csv_data($file, $type = 'csv', $skip_first_row = true) {
-	$file = new SplFileObject($file['path'], 'r');
-	$file->setFlags(SplFileObject::READ_CSV);
-	if ($type == 'tsv') $file->setCsvControl("\t");
-
-	$array = array();
-
-	$count = 0;
-	foreach ($file as $row) {
-		$count++;
-		if ($skip_first_row && $count == 1) continue;
-		if (!is_null($row[0])) array_push($array, $row);
-	}
-
-	return $array;
-}
 
 function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data) {
 	$prefix		= $data[0];
