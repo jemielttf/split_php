@@ -26,11 +26,10 @@ define('RESULT_DIR', 	CURRENT_DIR . DATA_BASE . '/members/');
 define('LOG_BASE', 		CURRENT_DIR . "/log/");
 define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 
-// echo PAGE_PATH  . "<br>\n";
-// echo DATA_DIR . "<br>\n";
-// echo RESULT_DIR . "<br><br>\n";
-
 require_once './utils.php';
+
+
+
 
 if (file_exists(DATA_DIR)) {
 	echo DATA_DIR . "は既に存在します。<br>\n";
@@ -68,18 +67,10 @@ if (file_exists(LOG_DIR)) {
     }
 }
 
-echo "<br>------------------------------------------------<br>\n";
-
 $proccess_log = set_process_log($time_1->format('Ymd_His'), $year, $month, $pdf_type);
-print_r($proccess_log);
 
 echo "<br>------------------------------------------------<br>\n";
 foreach ($_FILES as $key => $data) {
-	// echo "key name : {$key}<br>\n";
-	// echo "file name : {$data['name']}<br>\n";
-	// echo "file type : {$data['type']}<br>\n";
-	// echo "file tmp_name : {$data['tmp_name']}<br>\n";
-
 	$tempfile = $data['tmp_name'];
 	$filedata = array(
 		'path' => DATA_DIR . $data['name'],

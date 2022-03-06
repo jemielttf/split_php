@@ -300,6 +300,8 @@ if (count($log_list) > 0) {
 function get_newest_logs($dir) {        
 	$files = glob($dir . '/*_status.log');
 
+	if (empty($files)) return array();
+
 	$newest_file_date = null;
 	$newest_file = null;
 	foreach($files as $file) {

@@ -35,16 +35,6 @@
 
 			result.addEventListener('load', send_form, false);
 			result.contentDocument.location.replace('./progress.html');
-
-			// const data = new FormData(form);
-			// console.log(data.get('start'), data.get('end'));
-
-			// post_data(form.action, data)
-			// 		.then(res => {
-			// 			result.textContent = '';
-			// 			result.insertAdjacentHTML('afterbegin', JSON.stringify(res));
-			// 		})
-			// 		.catch(error => console.error(error));
 		}, false);
 
 		function send_form(event) {

@@ -8,9 +8,11 @@ define('PHP_PATH', 		'/usr/local/bin/php');
 
 function load_csv_data($file_xsv, $type = 'csv', $skip_first_row = true) {
 	$file = new SplFileObject($file_xsv, 'r');
+	$file->flock(LOCK_EX);
+
 	$file->setFlags(SplFileObject::READ_CSV);
 	if ($type == 'tsv') $file->setCsvControl("\t");
-
+	
 	$array = array();
 
 	$count = 0;
@@ -20,42 +22,80 @@ function load_csv_data($file_xsv, $type = 'csv', $skip_first_row = true) {
 		if (!is_null($row[0])) array_push($array, $row);
 	}
 
+	$file->flock(LOCK_UN);
+
 	return $array;
 }
 
 function set_process_log($proc_time, $year, $month, $pdf_type, $mode = 'new') {
 	$log_path = LOG_BASE . "process.log";
 
-	$json_str = '';
-	if (file_exists($log_path)) $json_str = file_get_contents($log_path);
-	
-	$proccess_data = $json_str ? json_decode($json_str, true) : null;;
+	$proccess_data = null;
+	if (file_exists($log_path)) $proccess_data = load_csv_data($log_path, 'csv', false);
 
 	$log = fopen($log_path, 'w+');
 	flock($log, LOCK_EX);
 
-	if 		($mode == 'new') 	$proccess_data = update_process_log_data($proccess_data, $proc_time, "{$year}_{$month}", $pdf_type);
-	elseif 	($mode == 'fin') 	$proccess_data = update_process_log_data($proccess_data, $proc_time, "{$year}_{$month}", $pdf_type, 'fin');
-	
-	fwrite($log, json_encode($proccess_data));
+	if 		($mode == 'new') 	$proccess_data = update_process_log_data($proccess_data, $proc_time, "{$year}_{$month}", $pdf_type, 'running');
+	else						$proccess_data = update_process_log_data($proccess_data, $proc_time, "{$year}_{$month}", $pdf_type, $mode);
+
+	foreach($proccess_data as $data) {
+		fputcsv($log, $data);
+	}
 	fclose($log);
 
 	return $proccess_data;
 }
 
-function update_process_log_data($data, $proc_time, $month_label, $pdf_type, $msg_1 = 'running') {
-	if (empty($data)) 								$data = array();
-	if (empty($data[$pdf_type]))					$data[$pdf_type] = array();
-	if (empty($data[$pdf_type][$month_label]))		$data[$pdf_type][$month_label] = array();
+function update_process_log_data($proccess_data, $proc_time, $month_label, $pdf_type, $msg) {
+	if (empty($proccess_data)) $proccess_data = array();
+	
+	$is_update_proc = false;
+	$delete_indexs	= array();
+	foreach($proccess_data as $index => &$data) {
+		$is_match_pdf_type 	= $data[0] == $pdf_type 	? true : false;
+		$is_match_month 	= $data[1] == $month_label 	? true : false;
+		$is_match_time		= $data[2] == $proc_time 	? true : false;
 
-	if (!empty($data[$pdf_type][$month_label][$proc_time])) {
-		$data[$pdf_type][$month_label][$proc_time] = $msg_1;
-	} else {
-		foreach($data[$pdf_type][$month_label] as $key => &$value) {
-			$value = $value == 'running' ? 'stop' : $value;
+		if($is_match_pdf_type && $is_match_month) {
+			if ($is_match_time) {
+				$data[3] = $msg;
+				$is_update_proc = true;
+			} else {
+				$data[3] = $data[3] == 'running' && $msg == 'running' ? 'stop' : $data[3];
+			}
 		}
-		$data[$pdf_type][$month_label][$proc_time] = $msg_1;
+		if ($data[3] == 'fin' || $data[3] == 'stopped') $delete_indexs[] = $index;
 	}
 
-	return $data;
+	if (!$is_update_proc) {
+		$proccess_data[] = array($pdf_type, $month_label, $proc_time, $msg);
+	}
+
+	rsort($delete_indexs);
+	for ($i = 0; $i < count($delete_indexs); $i++) {
+		array_splice($proccess_data, $delete_indexs[$i], 1);
+	}
+
+	return $proccess_data;
+}
+
+function get_current_prcess_log_status($proc_time, $month_label, $pdf_type) {
+	$log_path = LOG_BASE . "process.log";
+
+	$proccess_data = null;
+	if (file_exists($log_path)) $proccess_data = load_csv_data($log_path, 'csv', false);
+
+	$current_status = '';
+	foreach($proccess_data as $index => $data) {
+		$is_match_pdf_type 	= $data[0] == $pdf_type 	? true : false;
+		$is_match_month 	= $data[1] == $month_label 	? true : false;
+		$is_match_time		= $data[2] == $proc_time 	? true : false;
+
+		if($is_match_pdf_type && $is_match_month && $is_match_time) {
+			$current_status = $data[3];
+		}
+	}
+
+	return $current_status;
 }

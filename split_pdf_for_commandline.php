@@ -26,7 +26,11 @@ define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 
 require_once './utils.php';
 
-write_status_log($proc_id, 'start', $year, $month, $pdf_type);
+
+
+
+
+write_status_log($proc_id, 'running', $year, $month, $pdf_type);
 
 for ($i = 1; $i < count($argv); $i++) {
 	echo $argv[$i];
@@ -44,8 +48,22 @@ $cmd 	= "{$pdftk} {$file_pdf} dump_data | grep NumberOfPages | sed 's/[^0-9]*//'
 exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
 $pdf_total_pages = (int)$output[0];
 
+$proc_time 			= explode('_', $proc_id);
+$proc_time 			= "{$proc_time[0]}_{$proc_time[1]}";
+$month_label		= "{$year}_{$month}";
+
 $current_start_page = 1;
+$current_status		= '';
+$status_check_cycle	= get_status_check_cycle(count($member_data));
+
 for ($count = 0; $count < count($member_data); $count++) {
+	if ($count % $status_check_cycle == 0) {
+		$current_status = get_current_prcess_log_status($proc_time, $month_label, $pdf_type);
+		echo "current_status : {$current_status}\n";
+	}
+
+	if ($current_status == 'stop') break;
+
 	$result = split_PDF($file_pdf, $member_data[$count], $current_start_page, $pdf_type, $year, $month, $pdf_total_pages);
 
 	if ($result['error']) {
@@ -63,9 +81,16 @@ removeFile($file_xsv);
 echo "\n\n------------------------\n";
 $time_2 = new DateTime();
 $diff = $time_2->diff($time_1);
-echo '[' . $time_2->format('Y-m-d H:i:s')  . '] スクリプトは終了しました。'. "\n";
-echo '処理にかかった時間は' . $diff->format('%h:%i:%s') . '秒です。' . "\n";
-write_status_log($proc_id, 'fin', $year, $month, $pdf_type);
+
+if ($current_status == 'stop') {
+	echo '[' . $time_2->format('Y-m-d H:i:s')  . '] スクリプトは中断しました。'. "\n";
+	write_status_log($proc_id, 'stopped', $year, $month, $pdf_type);
+} else {
+	echo '[' . $time_2->format('Y-m-d H:i:s')  . '] スクリプトは終了しました。'. "\n";
+	echo '処理にかかった時間は' . $diff->format('%h:%i:%s') . '秒です。' . "\n";
+	write_status_log($proc_id, 'fin', $year, $month, $pdf_type);
+}
+
 
 
 
@@ -101,6 +126,10 @@ function split_PDF($pdf_path, $data, &$start, $pdf_type, $year, $month, $total_p
 	}
 }
 
+function get_status_check_cycle($length) {
+	return ceil($length / 50);
+}
+
 function removeFile($path) {
 	exec("rm -rf {$path}");
 }
@@ -126,6 +155,7 @@ function write_status_log($proc_id, $msg, $year, $month, $pdf_type) {
 	$log = fopen($log_path, 'w');
 	if ($log === FALSE) write_error_log($proc_id, '', 'ステータスログの書き込みに失敗しました。', $year, $month, $pdf_type);
 
+	flock($log, LOCK_EX);
 	$time = new DateTime();
 	fputcsv($log, array($time->format('Y-m-d\TH:i:s'), $pdf_type, $year, $month, $msg));
 	fclose($log);
@@ -134,34 +164,44 @@ function write_status_log($proc_id, $msg, $year, $month, $pdf_type) {
 }
 
 function check_all_done($proc_id, $year, $month, $pdf_type) {
-	$proc_date = explode('_', $proc_id);
-	$proc_date = "{$proc_date[0]}_{$proc_date[1]}";
+	$proc_time = explode('_', $proc_id);
+	$proc_time = "{$proc_time[0]}_{$proc_time[1]}";
 
 	$file_names = glob(LOG_DIR . '*_status.log');
 	$log_list = array();
 
 	foreach($file_names as $file_name) {
-		if (preg_match("@({$proc_date})@", $file_name, $m)) {
+		if (preg_match("@({$proc_time})@", $file_name, $m)) {
 			$log_list[] = $file_name;
 		}
 	}
 
-	$fin_count = 0;
-	$is_finish = false;
+	$fin_count 	= 0;
+	$is_finish 	= false;
+	$is_stopped = false;
 	$time_stamps = array();
 	foreach($log_list as $path) {
 		$proc_status = load_csv_data($path, 'csv', false);
 		$proc_status = $proc_status[0];
-		if ($proc_status[count($proc_status) - 1] == 'fin') $fin_count++;
+		if ($proc_status[count($proc_status) - 1] == 'fin'|| $proc_status[count($proc_status) - 1] == 'stopped' ) $fin_count++;
+		if ($proc_status[count($proc_status) - 1] == 'stopped') $is_stopped = true;
 		$time_stamps[] = $proc_status[0];
 	}
 	$is_finish = $fin_count == count($log_list) ? true : false;
 
 	if ($is_finish) {
-		echo "[{$time_stamps[count($time_stamps) - 1]}] すべての処理が終了しました。\n";
-		rename_working_dir($proc_id, $year, $month, $pdf_type);
 
-		set_process_log($proc_date, $year, $month, $pdf_type, 'fin');
+		if ($is_stopped) {
+			echo "[{$time_stamps[count($time_stamps) - 1]}] すべての処理を中断しました。\n";
+			remove_working_dir($proc_id, $year, $month, $pdf_type);
+
+			set_process_log($proc_time, $year, $month, $pdf_type, 'stopped');
+		} else {
+			echo "[{$time_stamps[count($time_stamps) - 1]}] すべての処理が終了しました。\n";
+			rename_working_dir($proc_id, $year, $month, $pdf_type);
+
+			set_process_log($proc_time, $year, $month, $pdf_type, 'fin');
+		}
 	}
 }
 
@@ -179,7 +219,7 @@ function rename_working_dir($proc_id, $year, $month, $pdf_type) {
 			write_error_log($proc_id, '', '旧ディレクトリの削除に失敗しました。', $year, $month, $pdf_type);
 			return;
 		} else {
-			echo "旧ディレクトリの削除しました。\n";
+			echo "旧ディレクトリを削除しました。\n";
 		}
 	}
 
@@ -187,6 +227,22 @@ function rename_working_dir($proc_id, $year, $month, $pdf_type) {
 		echo "作業ディレクトリをリネームしました。\n";
 	} else {
 		echo "作業ディレクトリのリネームに失敗しました。\n";
+	}
+}
+
+function remove_working_dir($proc_id, $year, $month, $pdf_type) {
+	$working_dir	= CURRENT_DIR . DATA_BASE;
+
+	if (file_exists($working_dir)) {
+		exec("rm -rf {$working_dir}", $outupt);
+
+		if (count($outupt) > 1) {
+			echo "作業ディレクトリの削除に失敗しました。\n";
+			write_error_log($proc_id, '', '作業ディレクトリの削除に失敗しました。', $year, $month, $pdf_type);
+			return;
+		} else {
+			echo "作業ディレクトリを削除しました。\n";
+		}
 	}
 }
 

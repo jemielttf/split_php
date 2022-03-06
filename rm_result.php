@@ -3,10 +3,8 @@
 echo '<link rel="stylesheet" href="style.css?v=0.0.5">' . "\n";
 
 $dirs = array(
-	__DIR__ . '/data/upload',
 	__DIR__ . '/data/invoice_letter',
 	__DIR__ . '/data/payment_notice_letter',
-	__DIR__ . '/result',
 	__DIR__ . '/log'
 );
 
