@@ -1,7 +1,7 @@
 <?php
 
-ini_set('max_execution_time', 0);
-date_default_timezone_set('Asia/Tokyo');
+require_once './setting.php';
+require_once './utils.php';
 
 $file_pdf	= $argv[1];
 $file_xsv	= $argv[2];
@@ -17,14 +17,13 @@ echo '[' . $time_1->format('Y-m-d H:i:s') . '] スクリプトを開始します
 $dir_time = explode('_', $proc_id);
 $dir_time = "{$dir_time[0]}_{$dir_time[1]}";
 
-define('CURRENT_DIR', 	__DIR__);
-define('DATA_BASE', 	"/data/{$pdf_type}/{$year}_{$month}-{$dir_time}");
-define('DATA_DIR', 		CURRENT_DIR . DATA_BASE . '/source/');
-define('RESULT_DIR', 	CURRENT_DIR . DATA_BASE . '/members/');
+define('DATA_BASE', 	"/{$pdf_type}/{$year}_{$month}-{$dir_time}");
+define('DATA_DIR', 		FILES_DIR . DATA_BASE . '/source/');
+define('RESULT_DIR', 	FILES_DIR . DATA_BASE . '/members/');
 define('LOG_BASE', 		CURRENT_DIR . "/log/");
 define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 
-require_once './utils.php';
+
 
 
 
@@ -206,7 +205,7 @@ function check_all_done($proc_id, $year, $month, $pdf_type) {
 }
 
 function rename_working_dir($proc_id, $year, $month, $pdf_type) {
-	$working_dir	= CURRENT_DIR . DATA_BASE;
+	$working_dir	= FILES_DIR . DATA_BASE;
 	$data_dir		= explode('-', $working_dir);
 	$data_dir		= $data_dir[0];
 	echo $data_dir . "\n";
@@ -231,7 +230,7 @@ function rename_working_dir($proc_id, $year, $month, $pdf_type) {
 }
 
 function remove_working_dir($proc_id, $year, $month, $pdf_type) {
-	$working_dir	= CURRENT_DIR . DATA_BASE;
+	$working_dir	= FILES_DIR . DATA_BASE;
 
 	if (file_exists($working_dir)) {
 		exec("rm -rf {$working_dir}", $outupt);

@@ -1,15 +1,14 @@
 <?php
-ini_set('max_execution_time', 0);
-date_default_timezone_set('Asia/Tokyo');
+
+require_once './setting.php';
 
 $year 	= $argv[1];
 $month 	= $argv[2];
 $type	= $argv[3];
 
-define('CURRENT_DIR', 	__DIR__);
-define('DATA_BASE', 	"/data/{$type}/{$year}_{$month}");
-define('DATA_DIR', 		CURRENT_DIR . DATA_BASE . '/source/');
-define('RESULT_DIR', 	CURRENT_DIR . DATA_BASE . '/members/');
+define('DATA_BASE', 	"/{$type}/{$year}_{$month}");
+define('RESULT_DIR', 	FILES_DIR . DATA_BASE . '/members/');
+define('ZIP_DIR', 	FILES_DIR . DATA_BASE . '/');
 define('LOG_DIR', 		CURRENT_DIR . "/log/");
 
 class MakeZipArchive {
@@ -37,7 +36,7 @@ class MakeZipArchive {
 		}
 
 		$zip_name = "{$type}-{$year}_{$month}.zip";
-		$zip_path = $working_dir . $zip_name;
+		$zip_path = ZIP_DIR . $zip_name;
 
 		echo 'PDF count : ' . count($pdf_list) . "\n";
 		echo $zip_path."\n";

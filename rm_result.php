@@ -1,11 +1,13 @@
 <?php
 
-echo '<link rel="stylesheet" href="style.css?v=0.0.5">' . "\n";
+require_once './setting.php';
+
+echo '<link rel="stylesheet" href="style.css?v=0.0.6">' . "\n";
 
 $dirs = array(
-	__DIR__ . '/data/invoice_letter',
-	__DIR__ . '/data/payment_notice_letter',
-	__DIR__ . '/log'
+	FILES_DIR . '/invoice_letter',
+	FILES_DIR . '/payment_notice_letter',
+	CURRENT_DIR . '/log'
 );
 
 

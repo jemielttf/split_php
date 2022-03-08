@@ -1,9 +1,68 @@
+<style>
+	html {
+		font-size: 10px;
+	}
+
+	body {
+		margin: 0;
+		padding: 1rem;
+		font-size: 1.3rem;
+		font-weight: 300;
+		line-height: 1.8;
+		font-family: -apple-system,
+			BlinkMacSystemFont,
+			'Segoe UI',
+			'Hiragino Kaku Gothic ProN',
+			'Hiragino Sans',
+			'BIZ UDPGothic',
+			Meiryo,
+			Roboto,
+			sans-serif;
+	}
+
+	h1 {
+		font-size: 1.8rem;
+		font-weight: 600;
+		padding: 0.5em .8em;
+		margin: 0;
+		background-color: #e7e7e7;
+	}
+
+	h2 {
+		font-size: 1.5rem;
+		font-weight: 600;
+		padding: 1em 0;
+		margin: 0;
+		border-bottom: 1px solid #e3e3e3;
+	}
+
+	p {
+		font-size: 1.4rem;
+		font-weight: 300;
+		line-height: 1.8;
+	}
+
+	.important {
+		font-size: 1.5rem;
+		line-height: 1.5;
+		color: #bc140b;
+		font-weight: 600;
+	}
+
+	a {
+		font-size: 1.6rem;
+		display: inline-block;
+		font-weight: 600;
+		color: rgb(27, 92, 166);
+	}
+</style>
+
 <?php
 
-echo '<link rel="stylesheet" href="style.css?v=0.0.5">' . "\n";
+// echo '<link rel="stylesheet" href="style.css?v=0.0.6">' . "\n";
 
-ini_set('max_execution_time', 0);
-date_default_timezone_set('Asia/Tokyo');
+require_once './setting.php';
+require_once './utils.php';
 
 $pdf_type	= $_POST['pdf_type'];
 $parallel	= 'multi';
@@ -15,18 +74,20 @@ $file_pdf	= array();
 $file_xsv	= array();
 
 $time_1 = new DateTime();
-echo '[' . $time_1->format('Y-m-d H:i:s') . '] スクリプトを開始します。'. "<br><br>\n";
+
+echo '<main>' . "\n";
+echo '<h1>[' . $time_1->format('Y-m-d H:i:s') . '] スクリプトを開始します。</h1>' . "\n";
+echo "<p class='important'>すべてのバックグラウンド処理が開始するまでページを閉じたりリロードをしないようお願いします。</p><br>\n";
 
 define('DOMAIN', 		$_SERVER['HTTP_HOST']);
 define('PAGE_PATH', 	makePagePath(DOMAIN, $_SERVER['REQUEST_URI']));
-define('CURRENT_DIR', 	__DIR__);
-define('DATA_BASE', 	"/data/{$pdf_type}/{$year}_{$month}-{$time_1->format('Ymd_His')}");
-define('DATA_DIR', 		CURRENT_DIR . DATA_BASE . '/source/');
-define('RESULT_DIR', 	CURRENT_DIR . DATA_BASE . '/members/');
+define('DATA_BASE', 	"/{$pdf_type}/{$year}_{$month}-{$time_1->format('Ymd_His')}");
+define('DATA_DIR', 		FILES_DIR . DATA_BASE . '/source/');
+define('RESULT_DIR', 	FILES_DIR . DATA_BASE . '/members/');
 define('LOG_BASE', 		CURRENT_DIR . "/log/");
 define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 
-require_once './utils.php';
+
 
 
 
@@ -38,7 +99,7 @@ if (file_exists(DATA_DIR)) {
         chmod(DATA_DIR, 0777);
         echo DATA_DIR . "の作成に成功しました。<br>\n";
     } else {
-		echo json_encode(array('error' => 1, 'error_message' =>  DATA_DIR . "の作成に失敗しました。"), JSON_UNESCAPED_UNICODE);
+		echo DATA_DIR . "の作成に失敗しました。<br>\n";
 		return;
     }
 }
@@ -50,7 +111,7 @@ if (file_exists(RESULT_DIR)) {
         chmod(RESULT_DIR, 0777);
         echo RESULT_DIR . "の作成に成功しました。<br>\n";
     } else {
-		echo json_encode(array('error' => 1, 'error_message' =>  RESULT_DIR . "の作成に失敗しました。"), JSON_UNESCAPED_UNICODE);
+		echo RESULT_DIR . "の作成に失敗しました。<br>\n";
 		return;
     }
 }
@@ -62,10 +123,13 @@ if (file_exists(LOG_DIR)) {
         chmod(LOG_DIR, 0777);
         echo LOG_DIR . "の作成に成功しました。<br>\n";
     } else {
-		echo json_encode(array('error' => 1, 'error_message' =>  LOG_DIR . "の作成に失敗しました。"), JSON_UNESCAPED_UNICODE);
+		echo LOG_DIR . "の作成に失敗しました。<br>\n";
 		return;
     }
 }
+
+@ob_flush();
+@flush();
 
 $proccess_log = set_process_log($time_1->format('Ymd_His'), $year, $month, $pdf_type);
 
@@ -90,13 +154,20 @@ foreach ($_FILES as $key => $data) {
 			echo "ファイルをアップロードできません。<br>\n";
 		}
 	}
-	echo "------------------------------------------------<br>\n";
+
+	@ob_flush();
+	@flush();
 }
 
 if (empty($file_pdf) || empty($file_xsv)) {
 	echo "アップロードファイルが不足しています。<br>\n";
 	return;
 }
+
+echo "------------------------------------------------<br><br>\n";
+echo "作業用分割ファイルの作成を開始します。<br>\n";
+echo "(この作業には数分かかる可能性があります。)<br><br>\n";
+echo "------------------------------------------------<br>\n";
 
 @ob_flush();
 @flush();
@@ -113,15 +184,9 @@ $split_file_data;
 for ($i = 0; $i < count($split_member_data); $i++) {
 	$split_file_data = $split_member_data[$i];
 	$pages = 0;
-	echo "\n<br>--------------------------------------------<br>\n";
-	// echo count($split_file_data) . "<br>\n";
+	
 	foreach ($split_file_data as $key => $sub_array) {
 		$pages = $pages + $sub_array[count($sub_array) - 2];
-		// foreach ($sub_array as $key2 => $value) {
-		// 	echo "Key => {$key2}, value => {$value}<br>\n";
-		// }
-		// echo $sub_array[count($sub_array) - 2] . "<br>\n";
-		// echo "\n<br>-----------------<br>\n";
 	}
 
 	// echo "Pages => {$pages}<br>\n";
@@ -137,11 +202,10 @@ for ($i = 0; $i < count($split_member_data); $i++) {
 		return;
 	} else {
 		array_push($file_list, $result['data']);
-		echo  $result['data']['pdf'] . "<br>\n";
-		echo  $result['data']['csv'] . "<br>\n";
+		echo  "作業用分割ファイル " . ((int)$i + 1) . " PDFを作成しました。<br>\n";
+		echo "------------------------------------------------<br>\n";
 	}
 
-	echo "--------------------------------------------<br>\n";
 	@ob_flush();
 	@flush();
 }
@@ -161,17 +225,18 @@ for ($i = 0; $i < count($file_list); $i++) {
 	$cmd = "nohup {$php_path} ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' 'cvs' '{$year}' '{$month}' '$time_str' >> {$log_dir}{$pdf_type}-{$time_str}.log 2>&1 &";
 
 	exec($cmd, $output);
-	echo "\n--------------------------------------------<br>\n";
+	echo "\n------------------------------------------------<br>\n";
 	// echo $cmd . "<br>\n";
-	echo "バックグラウンドで処理を実行中です。({$log_dir}{$pdf_type}-{$time_str}.log)<br>\n";
+	echo "作業用分割ファイル " . ((int)$i + 1) . " PDFのページ分割処理をバックグラウンドで開始します。<br>({$file_pdf_path})<br>\n";
 
 	@ob_flush();
 	@flush();
 }
 
-echo "\n--------------------------------------------<br>\n";
+echo "\n--------------------------------------------<br><br>\n";
+echo "<p class='important'>すべてのバックグラウンド処理を開始しました。<br>ページを閉じたりリロードしても問題ありません。</p>\n";
 echo "<a href='./info_iframe.php'>実行状況はこちらから確認できます。</a>";
-
+echo '</main>' . "<br>\n";
 // echo "<script>\n";
 // echo "setTimeout(function () {\n";
 // echo "	location.href = './info_iframe.php';\n";

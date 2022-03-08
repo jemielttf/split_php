@@ -175,8 +175,8 @@
 <main>
 
 <?php
-date_default_timezone_set('Asia/Tokyo');
 
+require_once './setting.php';
 require_once './utils.php';
 
 $cmd = "ps -ax | grep split_pdf_for_commandline.php | grep -v grep";
@@ -261,9 +261,11 @@ if (count($log_list) > 0) {
 				"<span>({$time_str})</span>";
 
 		if ($is_finish) {
-			$working_dir = "./data/{$type}/{$month_label[0]}_{$month_label[1]}/members/";
-			$zip_name = "{$type}-{$month_label[0]}_{$month_label[1]}.zip";
-			$zip_path = $working_dir . $zip_name;
+			$working_dir 	= FILES_DIR . "/{$type}/{$month_label[0]}_{$month_label[1]}/";
+			$zip_name 		= "{$type}-{$month_label[0]}_{$month_label[1]}.zip";
+			$zip_path 		= $working_dir . $zip_name;
+			$zip_param_path = explode(FILES_DIR, $zip_path);
+			$zip_param_path = $zip_param_path[1];
 
 			if (!file_exists($zip_path)) {
 				$php_path		= PHP_PATH;
@@ -271,17 +273,16 @@ if (count($log_list) > 0) {
 				exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
 				echo "<span> (zipファイルを作成中です。)</span>";
 			} else {
-				echo "<a class='download' href='$zip_path'>ダウンロード</a>";
+				$form_str  = 	"<form method='POST' action='./download_zip.php'>";
+				$form_str .= 	"<input type='hidden' name='zip_path' value='$zip_param_path'>";
+				$form_str .= 	"<input type='hidden' name='zip_name' value='{$zip_name}'>";
+				$form_str .= 	"<input type='submit' value='ダウンロード'>";
+				$form_str .= 	"</form>";
+
+				echo $form_str;
 			}
 
-			// $form_str  = 	"<form method='POST' action='./make_zip.php'>";
-			// $form_str .= 	"<input type='hidden' name='year' value='{$split_key[0]}'>";
-			// $form_str .= 	"<input type='hidden' name='month' value='{$split_key[1]}'>";
-			// $form_str .= 	"<input type='hidden' name='type' value='{$type}'>";
-			// $form_str .= 	"<input type='submit' value='ダウンロード'>";
-			// $form_str .= 	"</form>";
-
-			// echo $form_str;
+			
 		}
 
 		echo 	"</dd></dl>\n";
@@ -289,11 +290,11 @@ if (count($log_list) > 0) {
 
 	echo "<br><br>\n";
 
-	// echo "<script>\n";
-	// echo "setTimeout(function () {\n";
-	// echo "	location.reload();\n";
-	// echo "}, 30000);\n";
-	// echo "</script>\n";
+	echo "<script>\n";
+	echo "setTimeout(function () {\n";
+	echo "	location.reload();\n";
+	echo "}, 30000);\n";
+	echo "</script>\n";
 }
 
 

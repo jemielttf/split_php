@@ -1,11 +1,5 @@
 <?php
 
-define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
-define('PHP_PATH', 		'/usr/local/bin/php');
-// define('PDFtk_PATH', 	'/usr/bin/pdftk');
-// define('PHP_PATH', 		'/usr/bin/php');
-
-
 function load_csv_data($file_xsv, $type = 'csv', $skip_first_row = true) {
 	$file = new SplFileObject($file_xsv, 'r');
 	$file->flock(LOCK_EX);
