@@ -67,7 +67,7 @@
 	}
 
 	main dl dt {
-		width: 7em;
+		width: 7.3em;
 		font-weight: 500;
 		margin: 0;
 		position: relative;
@@ -179,8 +179,8 @@
 require_once './setting.php';
 require_once './utils.php';
 
-$cmd = "ps -ax | grep split_pdf_for_commandline.php | grep -v grep";
-exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
+// $cmd = "ps ax | grep split_pdf_for_commandline.php | grep -v grep";
+// exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
 
 $log_dirs = glob('./log/*', GLOB_ONLYDIR);
 $log_list   = array();
@@ -273,6 +273,8 @@ if (count($log_list) > 0) {
 				exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
 				echo "<span> (zipファイルを作成中です。)</span>";
 			} else {
+				// echo "<a class='download' href='$zip_path'>ダウンロード</a>";
+
 				$form_str  = 	"<form method='POST' action='./download_zip.php'>";
 				$form_str .= 	"<input type='hidden' name='zip_path' value='$zip_param_path'>";
 				$form_str .= 	"<input type='hidden' name='zip_name' value='{$zip_name}'>";
