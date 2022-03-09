@@ -300,10 +300,9 @@ if (count($log_list) > 0) {
 				$sheet_type = implode('_', $split_type);
 				// echo "call : new LedgerSheetFileList('{$sheet_type}');\n";
 
-				file_put_contents($working_dir . '.db_registered', "[{$time_str}] {$type}-{$month_label[0]}_{$month_label[1]}", LOCK_EX);
-
 				// require_once './LedgerSheetFileList.php';
 				// new LedgerSheetFileList($sheet_type);
+				file_put_contents($working_dir . '.db_registered', "[{$time_str}] {$type}-{$month_label[0]}_{$month_label[1]}", LOCK_EX);
 			}
 		}
 
