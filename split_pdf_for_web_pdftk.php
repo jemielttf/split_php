@@ -176,9 +176,31 @@ echo "------------------------------------------------<br>\n";
 // TSVを読み込み
 $member_data = load_csv_data($file_xsv['path'], $mode);
 
+// データのページ数の整合性を確認
+$pdftk	= PDFtk_PATH;
+$cmd 	= "{$pdftk} {$file_pdf['path']} dump_data | grep NumberOfPages | sed 's/[^0-9]*//'";
+exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
+$pdf_total_pages = (int)$output[0];
+
+$xsv_total_pages = get_member_data_total_pages($member_data);
+
+echo "PDFの総ページ数は {$pdf_total_pages} です。<br>\n";
+echo "分割データの総ページ数は {$xsv_total_pages} です。<br>\n";
+echo "--------------------------------------------<br>\n";
+
+if ($pdf_total_pages != $xsv_total_pages) {
+	error_stop($time_1->format('Ymd_His'), $year, $month, $pdf_type);
+
+	echo "エラー : PDFと分割データのページ数が一致しません。<br>\n";
+	echo "--------------------------------------------<br>\n";
+	echo "エラーにより処理が中断しました。\n";
+
+	return;
+}
+
 $current_start_page = 1;
 
-$split_member_data = splitMemberData($member_data, $page_count);
+$split_member_data = split_member_data($member_data, $page_count);
 $file_list = array();
 $split_file_data;
 
@@ -194,7 +216,7 @@ for ($i = 0; $i < count($split_member_data); $i++) {
 
 	$split_data = array("tmp_{$time_1->format('Ymd_His')}_{$i}", $pages);
 
-	$result = split_tmp_PDF($file_pdf['path'], $split_data, $current_start_page, $split_file_data);
+	$result = split_tmp_PDF($file_pdf['path'], $split_data, $current_start_page, $split_file_data, $pdf_total_pages);
 
 	if ($result['error']) {
 		error_stop($time_1->format('Ymd_His'), $year, $month, $pdf_type);
@@ -253,7 +275,7 @@ echo '</main>' . "<br>\n";
 
 // 以下function
 
-function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data) {
+function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data, $pdf_total_pages) {
 	$prefix		= $data[0];
 	$pages		= (int)$data[1];
 	$end 		= $start + $pages - 1;
@@ -265,10 +287,6 @@ function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data) {
 	$save_dir 		= DATA_DIR;
 	$pdftk			= PDFtk_PATH;
 
-	$cmd = "{$pdftk} {$pdf_path} dump_data | grep NumberOfPages | sed 's/[^0-9]*//'";
-	exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
-
-	$pdf_total_pages = (int)$output[0];
 	if ($pdf_total_pages < $end) return array('error' => 1, 'error_message' => "分割終了ページ ({$end}) が総ページ数 ({$pdf_total_pages}) よりも大きいです。");
 
 	$cmd = "{$pdftk} {$pdf_path} cat {$start}-{$end} output {$save_dir}{$file_name} >> " . LOG_BASE . "pdftk.log 2>&1";
@@ -295,7 +313,7 @@ function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data) {
 	}
 }
 
-function splitMemberData($data, $num) {
+function split_member_data($data, $num) {
 	$split_array = array();
 	$loop_step = 1;
 	$loop_limit = $num * $loop_step;
@@ -312,6 +330,16 @@ function splitMemberData($data, $num) {
 
 
 	return $split_array;
+}
+
+function get_member_data_total_pages($data) {
+	$pages = 0;
+	
+	foreach ($data as $row) {
+		$pages = $pages + $row[count($row) - 2];
+	}
+
+	return $pages;
 }
 
 function makePagePath($domain, $path) {
