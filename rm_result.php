@@ -2,7 +2,7 @@
 
 require_once './setting.php';
 
-echo '<link rel="stylesheet" href="style.css?v=0.0.6">' . "\n";
+echo '<link rel="stylesheet" href="style.css?v=0.0.7">' . "\n";
 
 $dirs = array(
 	FILES_DIR . '/invoice_letter',

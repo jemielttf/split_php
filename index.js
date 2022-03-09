@@ -34,7 +34,7 @@
 			event.preventDefault();
 
 			result.addEventListener('load', send_form, false);
-			result.contentDocument.location.replace('./progress.html');
+			result.contentDocument.location.replace('./progress.html?v=0.0.2');
 		}, false);
 
 		function send_form(event) {

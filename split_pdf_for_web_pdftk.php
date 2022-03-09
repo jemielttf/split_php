@@ -59,7 +59,7 @@
 
 <?php
 
-// echo '<link rel="stylesheet" href="style.css?v=0.0.6">' . "\n";
+// echo '<link rel="stylesheet" href="style.css?v=0.0.7">' . "\n";
 
 require_once './setting.php';
 require_once './utils.php';
