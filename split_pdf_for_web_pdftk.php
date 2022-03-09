@@ -160,6 +160,7 @@ foreach ($_FILES as $key => $data) {
 }
 
 if (empty($file_pdf) || empty($file_xsv)) {
+	error_stop($time_1->format('Ymd_His'), $year, $month, $pdf_type);
 	echo "アップロードファイルが不足しています。<br>\n";
 	return;
 }
@@ -196,6 +197,8 @@ for ($i = 0; $i < count($split_member_data); $i++) {
 	$result = split_tmp_PDF($file_pdf['path'], $split_data, $current_start_page, $split_file_data);
 
 	if ($result['error']) {
+		error_stop($time_1->format('Ymd_His'), $year, $month, $pdf_type);
+
 		echo 'エラー : ' . $result['error_message'] . "<br>\n";
 		echo "--------------------------------------------<br>\n";
 		echo "エラーにより処理が中断しました。\n";

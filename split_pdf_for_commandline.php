@@ -204,45 +204,5 @@ function check_all_done($proc_id, $year, $month, $pdf_type) {
 	}
 }
 
-function rename_working_dir($proc_id, $year, $month, $pdf_type) {
-	$working_dir	= FILES_DIR . DATA_BASE;
-	$data_dir		= explode('-', $working_dir);
-	$data_dir		= $data_dir[0];
-	echo $data_dir . "\n";
-
-	if (file_exists($data_dir)) {
-		exec("rm -rf {$data_dir}", $outupt);
-
-		if (count($outupt) > 1) {
-			echo "旧ディレクトリの削除に失敗しました。\n";
-			write_error_log($proc_id, '', '旧ディレクトリの削除に失敗しました。', $year, $month, $pdf_type);
-			return;
-		} else {
-			echo "旧ディレクトリを削除しました。\n";
-		}
-	}
-
-	if (rename($working_dir, $data_dir)) {
-		echo "作業ディレクトリをリネームしました。\n";
-	} else {
-		echo "作業ディレクトリのリネームに失敗しました。\n";
-	}
-}
-
-function remove_working_dir($proc_id, $year, $month, $pdf_type) {
-	$working_dir	= FILES_DIR . DATA_BASE;
-
-	if (file_exists($working_dir)) {
-		exec("rm -rf {$working_dir}", $outupt);
-
-		if (count($outupt) > 1) {
-			echo "作業ディレクトリの削除に失敗しました。\n";
-			write_error_log($proc_id, '', '作業ディレクトリの削除に失敗しました。', $year, $month, $pdf_type);
-			return;
-		} else {
-			echo "作業ディレクトリを削除しました。\n";
-		}
-	}
-}
 
 
