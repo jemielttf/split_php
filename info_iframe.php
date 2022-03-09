@@ -220,7 +220,7 @@ if (count($log_list) > 0) {
 	// echo "<br>\n";
 
 	foreach($task_array as $type => $month_array) {
-		$label_type	 =  $type == 'invoice_letter' 				? '請求書'
+		$label_type	 =     $type == 'invoice_letter' 			? '請求書'
 						: ($type == 'payment_notice_letter'		? '支払い通知書'
 																: '3個目の書類');
 		$count 			= 0;
@@ -267,24 +267,44 @@ if (count($log_list) > 0) {
 			$zip_param_path = explode(FILES_DIR, $zip_path);
 			$zip_param_path = $zip_param_path[1];
 
-			if (!file_exists($zip_path)) {
+			$zip_list = glob($zip_path . '*');
+			if (empty($zip_list)) {
 				$php_path		= PHP_PATH;
 				$cmd = "nohup {$php_path} ./make_zip.php '{$month_label[0]}' '{$month_label[1]}' '{$type}' >> ./log/make_zip.log 2>&1 &";
 				exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
 				echo "<span> (zipファイルを作成中です。)</span>";
+
+				@ob_flush();
+				@flush();
 			} else {
-				// echo "<a class='download' href='$zip_path'>ダウンロード</a>";
+				if (file_exists($zip_path) ) {
+					$form_str  = 	"<form method='POST' action='./download_zip.php'>";
+					$form_str .= 	"<input type='hidden' name='zip_path' value='$zip_param_path'>";
+					$form_str .= 	"<input type='hidden' name='zip_name' value='{$zip_name}'>";
+					$form_str .= 	"<input type='submit' value='ダウンロード'>";
+					$form_str .= 	"</form>";
 
-				$form_str  = 	"<form method='POST' action='./download_zip.php'>";
-				$form_str .= 	"<input type='hidden' name='zip_path' value='$zip_param_path'>";
-				$form_str .= 	"<input type='hidden' name='zip_name' value='{$zip_name}'>";
-				$form_str .= 	"<input type='submit' value='ダウンロード'>";
-				$form_str .= 	"</form>";
-
-				echo $form_str;
+					echo $form_str;
+				} else {
+					echo "<span> (zipファイルを作成中です。)</span>";
+				}
 			}
 
-			
+			if (
+				file_exists('./LedgerSheetFileList.php') &&
+				!file_exists($working_dir . '.db_registered')
+			) {
+				$split_type = explode('_', $type);
+				array_splice($split_type, count($split_type) - 1, 1);
+
+				$sheet_type = implode('_', $split_type);
+				// echo "call : new LedgerSheetFileList('{$sheet_type}');\n";
+
+				file_put_contents($working_dir . '.db_registered', "[{$time_str}] {$type}-{$month_label[0]}_{$month_label[1]}", LOCK_EX);
+
+				// require_once './LedgerSheetFileList.php';
+				// new LedgerSheetFileList($sheet_type);
+			}
 		}
 
 		echo 	"</dd></dl>\n";

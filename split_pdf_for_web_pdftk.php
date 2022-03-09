@@ -93,35 +93,37 @@ define('LOG_DIR', 		LOG_BASE . "{$pdf_type}/");
 
 
 if (file_exists(DATA_DIR)) {
-	echo DATA_DIR . "は既に存在します。<br>\n";
+	// echo DATA_DIR . "は既に存在します。<br>\n";
 } else {
     if (mkdir(DATA_DIR, 0777, true)) {
         chmod(DATA_DIR, 0777);
-        echo DATA_DIR . "の作成に成功しました。<br>\n";
+        // echo DATA_DIR . "の作成に成功しました。<br>\n";
     } else {
+		error_stop($time_1->format('Ymd_His'), $year, $month, $pdf_type);
 		echo DATA_DIR . "の作成に失敗しました。<br>\n";
 		return;
     }
 }
 
 if (file_exists(RESULT_DIR)) {
-	echo RESULT_DIR . "は既に存在します。<br>\n";
+	// echo RESULT_DIR . "は既に存在します。<br>\n";
 } else {
     if (mkdir(RESULT_DIR, 0777, true)) {
         chmod(RESULT_DIR, 0777);
-        echo RESULT_DIR . "の作成に成功しました。<br>\n";
+        // echo RESULT_DIR . "の作成に成功しました。<br>\n";
     } else {
+		error_stop($time_1->format('Ymd_His'), $year, $month, $pdf_type);
 		echo RESULT_DIR . "の作成に失敗しました。<br>\n";
 		return;
     }
 }
 
 if (file_exists(LOG_DIR)) {
-	echo LOG_DIR . "は既に存在します。<br>\n";
+	// echo LOG_DIR . "は既に存在します。<br>\n";
 } else {
     if (mkdir(LOG_DIR, 0777, true)) {
         chmod(LOG_DIR, 0777);
-        echo LOG_DIR . "の作成に成功しました。<br>\n";
+        // echo LOG_DIR . "の作成に成功しました。<br>\n";
     } else {
 		echo LOG_DIR . "の作成に失敗しました。<br>\n";
 		return;
@@ -133,7 +135,7 @@ if (file_exists(LOG_DIR)) {
 
 $proccess_log = set_process_log($time_1->format('Ymd_His'), $year, $month, $pdf_type);
 
-echo "<br>------------------------------------------------<br>\n";
+// echo "<br>------------------------------------------------<br>\n";
 foreach ($_FILES as $key => $data) {
 	$tempfile = $data['tmp_name'];
 	$filedata = array(
@@ -143,7 +145,7 @@ foreach ($_FILES as $key => $data) {
 
 	if (is_uploaded_file($tempfile)) {
 		if ( move_uploaded_file($tempfile, $filedata['path'])) {
-			echo $filedata['path'] . "をアップロードしました。<br>\n";
+			// echo $filedata['path'] . "をアップロードしました。<br>\n";
 
 			if 		($key == 'PDF') $file_pdf = $filedata;
 			elseif	($key == 'xSV') {
@@ -165,9 +167,9 @@ if (empty($file_pdf) || empty($file_xsv)) {
 	return;
 }
 
-echo "------------------------------------------------<br><br>\n";
+echo "------------------------------------------------<br>\n";
 echo "作業用分割ファイルの作成を開始します。<br>\n";
-echo "(この作業には数分かかる可能性があります。)<br><br>\n";
+echo "(この作業には数分かかる可能性があります。)<br>\n";
 echo "------------------------------------------------<br>\n";
 
 @ob_flush();
@@ -227,8 +229,8 @@ for ($i = 0; $i < count($split_member_data); $i++) {
 		return;
 	} else {
 		array_push($file_list, $result['data']);
-		echo  "作業用分割ファイル " . ((int)$i + 1) . " PDFを作成しました。<br>\n";
-		echo "------------------------------------------------<br>\n";
+		// echo  "作業用分割ファイル " . ((int)$i + 1) . " PDFを作成しました。<br>\n";
+		// echo "------------------------------------------------<br>\n";
 	}
 
 	@ob_flush();
@@ -250,23 +252,24 @@ for ($i = 0; $i < count($file_list); $i++) {
 	$cmd = "nohup {$php_path} ./split_pdf_for_commandline.php '{$file_pdf_path}' '{$file_xsv_path}' '{$pdf_type}' 'cvs' '{$year}' '{$month}' '$time_str' >> {$log_dir}{$pdf_type}-{$time_str}.log 2>&1 &";
 
 	exec($cmd, $output);
-	echo "\n------------------------------------------------<br>\n";
+	// echo "\n------------------------------------------------<br>\n";
 	// echo $cmd . "<br>\n";
-	echo "作業用分割ファイル " . ((int)$i + 1) . " PDFのページ分割処理をバックグラウンドで開始します。<br>({$file_pdf_path})<br>\n";
+	// echo "作業用分割ファイル " . ((int)$i + 1) . " PDFのページ分割処理をバックグラウンドで開始します。<br>({$file_pdf_path})<br>\n";
 
 	@ob_flush();
 	@flush();
 }
 
-echo "\n--------------------------------------------<br><br>\n";
-echo "<p class='important'>すべてのバックグラウンド処理を開始しました。<br>ページを閉じたりリロードしても問題ありません。</p>\n";
-echo "<a href='./info_iframe.php'>実行状況はこちらから確認できます。</a>";
+// echo "\n--------------------------------------------<br><br>\n";
+// echo "<p class='important'>すべてのバックグラウンド処理を開始しました。<br>ページを閉じたりリロードしても問題ありません。</p>\n";
+// echo "<a href='./info_iframe.php'>実行状況はこちらから確認できます。</a>";
 echo '</main>' . "<br>\n";
-// echo "<script>\n";
-// echo "setTimeout(function () {\n";
-// echo "	location.href = './info_iframe.php';\n";
-// echo "}, 2000);\n";
-// echo "</script>\n";
+
+echo "<script>\n";
+echo "setTimeout(function () {\n";
+echo "	location.href = './info_iframe.php';\n";
+echo "}, 1000);\n";
+echo "</script>\n";
 
 
 
