@@ -48,7 +48,7 @@ class MakeZipArchive {
 
 		if ($res === true) {
 			foreach ($pdf_list as $value) {
-				$new_name = str_replace($working_dir, '', $value);
+				$new_name = str_replace("{$working_dir}/", '', $value);
 				$zip->addFile($value, $new_name);
 			}
 			// Zip ファイルをクローズ
