@@ -108,8 +108,9 @@ input[type=submit] {
 	font-weight: 700;
 	color: #fff;
 	padding: 0.4em 2.4em;
-	background: #0363de;
-	border: none;
+	background: #00bfff;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.27);
+	border: 1px solid rgba(255, 255, 255, 0.7);
 	border-radius: 3px;
 	cursor: pointer;
 	transition: background .4s ease-in-out 0s;
@@ -120,13 +121,13 @@ input[type=submit] {
 	padding: 0.4em .6em;
 }
 
-input[type=submit]:hover {
-	background: #0d4082;
+/* input[type=submit]:hover {
+	background: #048fd2;
 	transition: background .2s ease-out 0s;
-}
+} */
 
-input[type=submit].delete 		{ background: #bc140b; margin-top: 1rem; }
-input[type=submit].delete:hover { background: #880b04; }
+input[type=submit].delete 		{ background: #d91e15; margin-top: 1rem; }
+/* input[type=submit].delete:hover { background: #880b04; } */
 
 input[type=file] {
 	position: absolute;
@@ -158,3 +159,20 @@ input[type=file] {
 form + form {
 	margin-top: 4rem;
 }
+
+/* @group iframe内表示用 */
+
+.is_iframe main section { margin: .5rem; }
+.is_iframe main section + section { margin-top: 4.5rem; }
+
+.is_iframe .form { width: 100%; }
+.is_iframe input[type=text] { width: 300px; }
+.is_iframe .form .param label span:nth-child(2) { flex: 0 0 500px; }
+
+.is_iframe .form .param label .button {
+	padding: 0.4em 1.6em;
+}
+
+.is_iframe .result div { height: 380px; }
+
+/* @end iframe内表示用 */

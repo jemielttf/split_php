@@ -128,6 +128,16 @@
 		transition: background .2s ease-out 0s;
 	}
 
+	main dl dd a.download,
+	main dl dd form input[type=submit],
+	main dl dd a.download:hover,
+	main dl dd form input[type=submit]:hover {
+		background: #00bfff;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.27);
+		border: 1px solid rgba(255, 255, 255, 0.7);
+		transition: none;
+	}
+
 	main .pre {
 		display: inline-block;
 		padding: 1.4rem 2rem;
@@ -281,7 +291,7 @@ if (count($log_list) > 0) {
 					$form_str  = 	"<form method='POST' action='./download_zip.php'>";
 					$form_str .= 	"<input type='hidden' name='zip_path' value='$zip_param_path'>";
 					$form_str .= 	"<input type='hidden' name='zip_name' value='{$zip_name}'>";
-					$form_str .= 	"<input type='submit' value='ダウンロード'>";
+					$form_str .= 	"<input type='submit' value='ZIPダウンロード'>";
 					$form_str .= 	"</form>";
 
 					echo $form_str;
@@ -366,7 +376,7 @@ function get_large_num_dir($dirs) {
 
 ?>
 
-
+<!--
 	<h1>使い方</h1>
 	
 	<p>複数ページのPDFとページ分割を指定したCSV又はTSVをアップロードし<br>
@@ -434,7 +444,7 @@ function get_large_num_dir($dirs) {
 00019	48	49	2	
 00020	50	50	1	</pre>			
 			</article>
-	
+-->
 
 </main>
 

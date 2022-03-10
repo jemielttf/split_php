@@ -2,6 +2,10 @@
 	'use strict';
 
 	function init(e) {
+		if (window !== window.parent) {
+			document.querySelector('body').classList.add("is_iframe");
+		}
+
 		init__form();
 		init__file_select();
 	}
