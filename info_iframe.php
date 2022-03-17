@@ -200,6 +200,12 @@ foreach($log_dirs as $dir) {
 	$log_list = array_merge($log_list, $files);
 }
 
+$referer = $_SERVER['HTTP_REFERER'];
+
+if 		(preg_match('@invoice@', $referer)) 		$parent_type = 'invoice_letter';
+elseif 	(preg_match('@payment@', $referer)) 		$parent_type = 'payment_notice_letter';
+else												$parent_type = '';
+
 if (count($log_list) > 0) {
 	echo "<h1>実行結果</h1>\n";
 
@@ -233,6 +239,9 @@ if (count($log_list) > 0) {
 		$label_type	 =     $type == 'invoice_letter' 			? '請求書'
 						: ($type == 'payment_notice_letter'		? '支払い通知書'
 																: '3個目の書類');
+
+		if ($parent_type != '' && $parent_type != $type) continue;
+
 		$count 			= 0;
 		$is_finish 		= false;
 		$time_stamps 	= array();
