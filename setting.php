@@ -7,7 +7,7 @@ define('CURRENT_DIR', 	__DIR__);
 define('FILES_DIR', 	__DIR__ . '/data');
 // define('FILES_DIR', 	'/export/www/webapp/invoice_pdf');
 
-define('PDFtk_PATH', 	'/usr/local/bin/pdftk');
+define('PDFtk_PATH', 	'/usr/bin/pdftk');
 define('PHP_PATH', 		'/usr/local/bin/php');
 // define('PDFtk_PATH', 	'/usr/bin/pdftk');
 // define('PHP_PATH', 		'/usr/bin/php');
