@@ -3,7 +3,8 @@
     "type": "project",
     "require": {
         "setasign/fpdi": "^2.3",
-        "setasign/fpdf": "^1.8"
+        "setasign/fpdf": "^1.8",
+        "phpoffice/phpspreadsheet": "dev-master"
     },
     "minimum-stability": "dev"
 }
