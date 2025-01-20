@@ -61,6 +61,13 @@
 
 // echo '<link rel="stylesheet" href="style.css?v=0.0.7">' . "\n";
 
+require_once './vendor/autoload.php';
+use setasign\Fpdi\Fpdi;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx as ReaderXlsx;
+use PhpOffice\PhpSpreadsheet\Reader\Xls as ReaderXls;
+
 require_once './setting.php';
 require_once './utils.php';
 
@@ -72,6 +79,7 @@ $month		= str_pad($_POST['month'], 2, 0, STR_PAD_LEFT);
 $mode		= NULL;
 $file_pdf	= array();
 $file_xsv	= array();
+$file_xls	= array();
 
 $time_1 = new DateTime();
 
@@ -152,6 +160,21 @@ foreach ($_FILES as $key => $data) {
 				$file_xsv 	= $filedata;
 				$mode 		= $data['type'] == 'text/csv' || $data['type'] == 'application/vnd.ms-excel' ? 'csv' : 'tsv';
 			}
+			elseif	($key == 'XLS') {
+				$file_xls 	= $filedata;
+				$mode 		= $data['type'] == 'application/vnd.ms-excel' ? 'xls' : '';
+				$mode 		= $data['type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ? 'xlsx' : $mode;
+				echo "XLSファイルは現在テスト中です。<br>{$data['type']} : mode = {$mode}<br><br>\n";
+
+				if ($mode == 'xls' || $mode == 'xlsx') {
+					$xls_data = read_xls($file_xls['path'], $mode);
+
+					$json_xls_data = json_encode($xls_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+					echo "<pre>{$json_xls_data}</pre>";
+
+					echo "<br><br>\n";
+				}
+			}
 		} else {
 			echo "ファイルをアップロードできません。<br>\n";
 		}
@@ -209,7 +232,7 @@ $split_file_data;
 for ($i = 0; $i < count($split_member_data); $i++) {
 	$split_file_data = $split_member_data[$i];
 	$pages = 0;
-	
+
 	foreach ($split_file_data as $key => $sub_array) {
 		$pages = $pages + $sub_array[count($sub_array) - 2];
 	}
@@ -282,9 +305,9 @@ function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data, $pdf_total_p
 	$prefix		= $data[0];
 	$pages		= (int)$data[1];
 	$end 		= $start + $pages - 1;
-	
+
 	if ($end < $start) return array('error' => 1, 'error_message' => "分割終了ページ ({$end}) が開始ページ ({$start}) よりも小さいです。");
-	
+
 	$file_name 		= "{$prefix}-{$start}_{$end}" . '.pdf';
 	$file_name_csv 	= "{$prefix}-{$start}_{$end}" . '.csv';
 	$save_dir 		= DATA_DIR;
@@ -296,7 +319,7 @@ function split_tmp_PDF($pdf_path, $data, &$start, $split_file_data, $pdf_total_p
 	// echo $cmd . "<br>\n";
 	exec("export LANG=ja_JP.UTF-8; " . $cmd, $output, $result);
 
-	
+
 
 	$csv = fopen($save_dir . $file_name_csv, 'w');
 	if ($csv === FALSE) return array('error' => 1, 'error_message' => "CSVファイルの書き込みに失敗しました。");
@@ -337,7 +360,7 @@ function split_member_data($data, $num) {
 
 function get_member_data_total_pages($data) {
 	$pages = 0;
-	
+
 	foreach ($data as $row) {
 		$pages = $pages + $row[count($row) - 2];
 	}
@@ -349,7 +372,7 @@ function makePagePath($domain, $path) {
 	$path_str = '';
 
 	$path_array = explode('/', $path);
-	
+
 	for($i = 1; $i < count($path_array) - 1; $i++) {
 		$path_str = $path_str . '/' . $path_array[$i];
 	}
@@ -360,4 +383,20 @@ function makePagePath($domain, $path) {
 
 function echo_error($error) {
 	return json_encode(array('error' => 1, 'error_message' => $error->getMessage()));
+}
+
+function read_xls($file_path, $mode) {
+	if ($mode == 'xls') {
+		$reader = new ReaderXls();
+	} elseif ($mode == 'xlsx') {
+		$reader = new ReaderXlsx();
+	}
+
+	$reader->setReadDataOnly(true);
+	$spreadsheet = $reader->load($file_path);
+	$sheet = $spreadsheet->getActiveSheet();
+	$data = $sheet->toArray();
+	array_shift($data); // 1行目を削除
+
+	return $data;
 }

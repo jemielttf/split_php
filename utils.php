@@ -6,7 +6,7 @@ function load_csv_data($file_xsv, $type = 'csv', $skip_first_row = true) {
 
 	$file->setFlags(SplFileObject::READ_CSV);
 	if ($type == 'tsv') $file->setCsvControl("\t");
-	
+
 	$array = array();
 
 	$count = 0;
@@ -43,7 +43,7 @@ function set_process_log($proc_time, $year, $month, $pdf_type, $mode = 'new') {
 
 function update_process_log_data($proccess_data, $proc_time, $month_label, $pdf_type, $msg) {
 	if (empty($proccess_data)) $proccess_data = array();
-	
+
 	$is_update_proc = false;
 	$delete_indexs	= array();
 	foreach($proccess_data as $index => &$data) {
@@ -104,18 +104,18 @@ function rename_working_dir($proc_id, $year, $month, $pdf_type) {
 		exec("rm -rf {$data_dir}", $outupt);
 
 		if (count($outupt) > 1) {
-			echo "旧ディレクトリの削除に失敗しました。\n";
+			echo "旧ディレクトリの削除に失敗しました。<br />\n";
 			write_error_log($proc_id, '', '旧ディレクトリの削除に失敗しました。', $year, $month, $pdf_type);
 			return;
 		} else {
-			echo "旧ディレクトリを削除しました。\n";
+			echo "旧ディレクトリを削除しました。<br />\n";
 		}
 	}
 
 	if (rename($working_dir, $data_dir)) {
-		echo "作業ディレクトリをリネームしました。\n";
+		echo "作業ディレクトリをリネームしました。<br />\n";
 	} else {
-		echo "作業ディレクトリのリネームに失敗しました。\n";
+		echo "作業ディレクトリのリネームに失敗しました。<br />\n";
 	}
 }
 
@@ -126,11 +126,11 @@ function remove_working_dir($proc_id, $year, $month, $pdf_type) {
 		exec("rm -rf {$working_dir}", $outupt);
 
 		if (count($outupt) > 1) {
-			echo "作業ディレクトリの削除に失敗しました。\n";
+			echo "作業ディレクトリの削除に失敗しました。<br />\n";
 			write_error_log($proc_id, '', '作業ディレクトリの削除に失敗しました。', $year, $month, $pdf_type);
 			return;
 		} else {
-			echo "作業ディレクトリを削除しました。\n";
+			echo "作業ディレクトリを削除しました。<br />\n";
 		}
 	}
 }
